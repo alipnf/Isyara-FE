@@ -112,13 +112,28 @@ export default function Home() {
           <h3 className="text-3xl font-bold text-center mb-12">FAQ</h3>
           <div className="space-y-4">
             {faqs.map((item, idx) => (
-              <div key={idx} className="rounded-xl border border-border bg-card/50 backdrop-blur transition-all duration-300 hover:shadow-md">
-                <input id={`faq-${idx}`} type="checkbox" className="peer hidden" />
-                <label htmlFor={`faq-${idx}`} className="flex cursor-pointer items-center justify-between gap-4 px-5 py-4">
+              <div
+                key={idx}
+                className="rounded-xl border border-border bg-card/50 backdrop-blur transition-all duration-300 hover:shadow-md"
+              >
+                <input
+                  id={`faq-${idx}`}
+                  type="checkbox"
+                  className="peer hidden"
+                />
+                <label
+                  htmlFor={`faq-${idx}`}
+                  className="flex cursor-pointer items-center justify-between gap-4 px-5 py-4"
+                >
                   <span className="font-medium">{item.q}</span>
-                  <span className="text-muted-foreground transition-transform duration-300 peer-checked:rotate-180">▾</span>
+                  <span className="text-muted-foreground transition-transform duration-300 peer-checked:rotate-180">
+                    ▾
+                  </span>
                 </label>
-                <label htmlFor={`faq-${idx}`} className="block px-5 pb-4 pt-0 text-sm text-muted-foreground leading-relaxed hidden peer-checked:block">
+                <label
+                  htmlFor={`faq-${idx}`}
+                  className="block px-5 pb-4 pt-0 text-sm text-muted-foreground leading-relaxed hidden peer-checked:block"
+                >
                   {item.a}
                 </label>
               </div>
