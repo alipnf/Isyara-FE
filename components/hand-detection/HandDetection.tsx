@@ -1,0 +1,641 @@
+'use client';
+
+import React, { useEffect, useRef, useState } from 'react';
+import * as tf from '@tensorflow/tfjs';
+import { useMediaPipeHands, drawLandmarks } from './MediaPipeHands';
+import { extractFeatures } from './FeatureExtraction';
+
+interface HandDetectionProps {
+  onDetection?: (label: string, confidence: number) => void;
+  onStatusChange?: (status: 'inactive' | 'active' | 'error') => void;
+  onLiveUpdate?: (label: string | null, confidence: number) => void; // per-frame label + confidence (0-100)
+  isDetecting: boolean;
+  showLandmarks?: boolean;
+  width?: number;
+  height?: number;
+  confidenceThreshold?: number;
+  modelPath?: string;
+  classesPath?: string;
+  containerClassName?: string;
+  holdDuration?: number; // Hold duration in seconds
+  expectedLabel?: string; // Expected label to match (e.g., "A", "B", etc.)
+}
+
+export function HandDetection({
+  onDetection,
+  onStatusChange,
+  onLiveUpdate,
+  isDetecting,
+  showLandmarks = true,
+  width = 640,
+  height = 480,
+  confidenceThreshold = 0.75,
+  modelPath = '/models/model.json',
+  classesPath = '/models/classes.json',
+  containerClassName = '',
+  holdDuration = 3, // Default 3 seconds
+  expectedLabel = '', // Expected label (e.g. the letter being practiced)
+}: HandDetectionProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const handsRef = useMediaPipeHands();
+  const cameraRef = useRef<any>(null);
+  const [model, setModel] = useState<tf.LayersModel | null>(null);
+  const [classes, setClasses] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const lastDimsRef = useRef({
+    width: 0,
+    height: 0,
+    videoWidth: 0,
+    videoHeight: 0,
+  });
+  const [currentDetectedLabel, setCurrentDetectedLabel] = useState<
+    string | null
+  >(null);
+  const [showHoldAlert, setShowHoldAlert] = useState(false);
+  const startWaitTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const expectedLabelRef = useRef<string>(expectedLabel);
+  const onDetectionRef = useRef<typeof onDetection>(onDetection);
+  const onLiveUpdateRef = useRef<typeof onLiveUpdate>(onLiveUpdate);
+
+  // References for hold timer
+  const detectionTimerRef = useRef<{
+    label: string;
+    confidence: number;
+    startTime: number;
+    timerId: NodeJS.Timeout | null;
+  } | null>(null);
+
+  // Add helper function for drawing rounded rectangles
+  const drawRoundedRect = (
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number
+  ) => {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+  };
+
+  // Clean up resources when component unmounts
+  useEffect(() => {
+    return () => {
+      stopDetection();
+    };
+  }, []);
+
+  // Keep latest onDetection callback to avoid stale closure in MediaPipe callback
+  useEffect(() => {
+    onDetectionRef.current = onDetection;
+  }, [onDetection]);
+
+  // Keep latest onLiveUpdate callback
+  useEffect(() => {
+    onLiveUpdateRef.current = onLiveUpdate;
+  }, [onLiveUpdate]);
+
+  // Load TFJS model and classes
+  useEffect(() => {
+    let mounted = true;
+
+    const loadModel = async () => {
+      try {
+        await tf.ready();
+        try {
+          await tf.setBackend('webgl');
+        } catch (_) {}
+
+        // Try loading model from different paths
+        const tryPaths = async (
+          candidates: string[],
+          loader: (url: string) => Promise<any>
+        ) => {
+          let lastErr = null;
+          for (const url of candidates) {
+            try {
+              return await loader(url);
+            } catch (e) {
+              lastErr = e;
+            }
+          }
+          throw lastErr || new Error('All paths failed');
+        };
+
+        // Load model and classes in parallel
+        const [loadedModel, cls] = await Promise.all([
+          tryPaths([modelPath, '/model.json', 'models/model.json'], (u) =>
+            tf.loadLayersModel(u)
+          ),
+          tryPaths(
+            [classesPath, '/classes.json', 'models/classes.json'],
+            async (u) => {
+              const r = await fetch(u);
+              if (!r.ok) throw new Error(`HTTP ${r.status} on ${u}`);
+              const j = await r.json();
+              return j.classes || j;
+            }
+          ),
+        ]);
+
+        if (!mounted) return;
+
+        setModel(loadedModel);
+        setClasses(cls);
+
+        if (onStatusChange) {
+          onStatusChange('inactive');
+        }
+      } catch (err: any) {
+        console.error('Failed to load model/classes', err);
+        setError(
+          `Failed to load model/classes: ${err?.message || String(err)}`
+        );
+        if (onStatusChange) {
+          onStatusChange('error');
+        }
+      }
+    };
+
+    loadModel();
+
+    return () => {
+      mounted = false;
+    };
+  }, [modelPath, classesPath, onStatusChange]);
+
+  // Start/stop detection based on isDetecting prop
+  useEffect(() => {
+    if (isDetecting && !isRunning) {
+      // If MediaPipe or Camera script isn't loaded yet, retry until ready
+      const tryStart = () => {
+        const ready =
+          !!handsRef.current &&
+          typeof window !== 'undefined' &&
+          !!(window as any).Camera &&
+          !!model;
+        if (ready) {
+          startWaitTimerRef.current && clearTimeout(startWaitTimerRef.current);
+          startWaitTimerRef.current = null;
+          startDetection();
+        } else {
+          startWaitTimerRef.current = setTimeout(tryStart, 250);
+        }
+      };
+      tryStart();
+    } else if (!isDetecting && isRunning) {
+      stopDetection();
+    }
+
+    // Clear any pending hold timer if detection is toggled
+    if (!isDetecting && detectionTimerRef.current?.timerId) {
+      clearTimeout(detectionTimerRef.current.timerId);
+      detectionTimerRef.current = null;
+      setShowHoldAlert(false);
+    }
+    return () => {
+      if (startWaitTimerRef.current) {
+        clearTimeout(startWaitTimerRef.current);
+        startWaitTimerRef.current = null;
+      }
+    };
+  }, [isDetecting, isRunning, model]);
+
+  // Start detection
+  const startDetection = async () => {
+    if (!handsRef.current || isRunning) {
+      return;
+    }
+
+    setIsRunning(true);
+
+    try {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      if (!video || !canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      // Set initial size
+      const resize = () => {
+        if (!containerRef.current || !canvas) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        canvas.width = Math.max(1, Math.floor(rect.width));
+        if (!canvas.height) canvas.height = Math.floor(rect.width * 0.75);
+      };
+      resize();
+
+      // Configure MediaPipe Hands
+      handsRef.current.onResults((results: any) => {
+        if (!ctx || !canvas || !containerRef.current) return;
+
+        // Adapt canvas size to source aspect ratio
+        const img = results.image;
+        const rect = containerRef.current.getBoundingClientRect();
+        const cssW = Math.max(1, Math.floor(rect.width));
+        const srcW = (img && img.width) || video.videoWidth || width;
+        const srcH = (img && img.height) || video.videoHeight || height;
+        const cssH = Math.max(1, Math.floor(cssW * (srcH / srcW)));
+
+        const last = lastDimsRef.current;
+        if (
+          last.width !== cssW ||
+          last.height !== cssH ||
+          last.videoWidth !== srcW ||
+          last.videoHeight !== srcH
+        ) {
+          canvas.width = cssW;
+          canvas.height = cssH;
+          containerRef.current.style.height = `${cssH}px`;
+          lastDimsRef.current = {
+            width: cssW,
+            height: cssH,
+            videoWidth: srcW,
+            videoHeight: srcH,
+          };
+        }
+
+        ctx.save();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw video frame with mirror effect
+        try {
+          ctx.translate(canvas.width, 0);
+          ctx.scale(-1, 1);
+          if (img) {
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          }
+        } catch (_) {}
+
+        // Restore context for landmarks drawing (so they're drawn correctly)
+        ctx.restore();
+        ctx.save();
+
+        // Draw hand landmarks if enabled (with mirror effect applied separately)
+        if (
+          showLandmarks &&
+          results.multiHandLandmarks &&
+          results.multiHandLandmarks.length
+        ) {
+          // Apply same mirror transform for landmarks
+          ctx.translate(canvas.width, 0);
+          ctx.scale(-1, 1);
+
+          drawLandmarks(
+            ctx,
+            results.multiHandLandmarks,
+            canvas.width,
+            canvas.height
+          );
+        }
+
+        // Make prediction if model is loaded
+        if (
+          model &&
+          results.multiHandLandmarks &&
+          results.multiHandLandmarks.length
+        ) {
+          // Consider up to first two hands as in the Python script
+          const hands = results.multiHandLandmarks.slice(0, 2);
+          // Track any-best (for display) and threshold-best (for hold logic)
+          let bestConfAny = -1;
+          let bestLabelAny = '';
+          let bestConf = -1;
+          let bestLabel = '';
+          // Track confidence for the expected label specifically (for UI percentage)
+          const currentExpected = expectedLabelRef.current || '';
+          const expectedIdx = currentExpected
+            ? classes.indexOf(currentExpected)
+            : -1;
+          let expectedConf = 0;
+
+          for (let i = 0; i < hands.length; i++) {
+            const feat = extractFeatures(hands[i]);
+            if (!feat) continue;
+
+            const input = tf.tensor(feat, [1, 63], 'float32');
+            const probs = model.predict(input) as tf.Tensor;
+            const pData = probs.dataSync();
+            input.dispose();
+            probs.dispose();
+
+            let bestIdx = 0;
+            for (let j = 1; j < pData.length; j++) {
+              if (pData[j] > pData[bestIdx]) bestIdx = j;
+            }
+
+            const conf = pData[bestIdx];
+            const lbl = classes[bestIdx] ?? `${bestIdx}`;
+
+            // Track best regardless of threshold for UI
+            if (conf > bestConfAny) {
+              bestConfAny = conf;
+              bestLabelAny = lbl;
+            }
+            // Track best only if passes threshold for hold logic
+            if (conf > bestConf && conf >= confidenceThreshold) {
+              bestConf = conf;
+              bestLabel = lbl;
+            }
+
+            // Track confidence for the expected label (max across hands)
+            if (expectedIdx >= 0) {
+              const econf = pData[expectedIdx];
+              if (econf > expectedConf) expectedConf = econf;
+            }
+          }
+
+          // Always show the best current label (even if below threshold)
+          if (bestLabelAny) {
+            setCurrentDetectedLabel(bestLabelAny);
+          } else {
+            setCurrentDetectedLabel(null);
+          }
+          // Emit live update using expected label confidence percent (0-100)
+          onLiveUpdateRef.current?.(
+            bestLabelAny || null,
+            Math.round(Math.max(0, Math.min(1, expectedConf)) * 100)
+          );
+
+          // Handle the hold duration timer - only start timer if the detected label matches expected label
+          const now = Date.now();
+          const isCorrectGesture =
+            !!currentExpected && bestLabel === currentExpected;
+
+          // If we have a valid detection and it matches the expected label
+          if (bestConf >= confidenceThreshold && isCorrectGesture) {
+            // Show hold alert when correct gesture is detected
+            setShowHoldAlert(true);
+
+            // If there's no current timer or the label changed, start a new timer
+            if (
+              !detectionTimerRef.current ||
+              detectionTimerRef.current.label !== bestLabel
+            ) {
+              // Clear any existing timer
+              if (detectionTimerRef.current?.timerId) {
+                clearTimeout(detectionTimerRef.current.timerId);
+              }
+
+              // Start a new timer
+              const timerId = setTimeout(() => {
+                if (onDetectionRef.current && detectionTimerRef.current) {
+                  onDetectionRef.current(
+                    detectionTimerRef.current.label,
+                    detectionTimerRef.current.confidence
+                  );
+                }
+                detectionTimerRef.current = null;
+                setShowHoldAlert(false);
+              }, holdDuration * 1000);
+
+              // Store the new timer details
+              detectionTimerRef.current = {
+                label: bestLabel,
+                confidence: bestConf * 100,
+                startTime: now,
+                timerId,
+              };
+            }
+
+            // Draw hold progress
+            if (detectionTimerRef.current) {
+              const elapsedSeconds =
+                (now - detectionTimerRef.current.startTime) / 1000;
+              const progress = Math.min(1, elapsedSeconds / holdDuration);
+
+              // Draw progress indicator at the bottom of the screen
+              ctx.restore();
+              ctx.save();
+
+              const progressWidth = canvas.width * 0.6;
+              const progressHeight = 8;
+              const progressX = (canvas.width - progressWidth) / 2;
+              const progressY = canvas.height - 20;
+
+              // Background
+              ctx.fillStyle = 'rgba(0,0,0,0.5)';
+              ctx.beginPath();
+              drawRoundedRect(
+                ctx,
+                progressX,
+                progressY,
+                progressWidth,
+                progressHeight,
+                4
+              );
+              ctx.fill();
+
+              // Progress bar
+              ctx.fillStyle = 'rgba(52, 211, 153, 0.9)'; // Green color
+              ctx.beginPath();
+              drawRoundedRect(
+                ctx,
+                progressX,
+                progressY,
+                progressWidth * progress,
+                progressHeight,
+                4
+              );
+              ctx.fill();
+            }
+          } else {
+            // No valid detection or doesn't match expected label, clear timer
+            if (detectionTimerRef.current?.timerId) {
+              clearTimeout(detectionTimerRef.current.timerId);
+              detectionTimerRef.current = null;
+              setShowHoldAlert(false);
+            }
+          }
+        } else {
+          setCurrentDetectedLabel(null);
+          onLiveUpdateRef.current?.(null, 0);
+        }
+
+        ctx.restore();
+      });
+
+      // Start camera via MediaPipe helper
+      const Camera = (window as any).Camera;
+      if (!Camera) {
+        // Defer starting until camera_utils is loaded; a retry loop above will handle this
+        setIsRunning(false);
+        return;
+      }
+
+      const camera = new Camera(video, {
+        onFrame: async () => {
+          try {
+            if (handsRef.current && video) {
+              await handsRef.current.send({ image: video });
+            }
+          } catch (e) {
+            console.warn('hands.send error', e);
+          }
+        },
+        width,
+        height,
+      });
+
+      await camera.start();
+      cameraRef.current = camera;
+
+      if (onStatusChange) {
+        onStatusChange('active');
+      }
+
+      // Handle resizing
+      const ro = new ResizeObserver(() => resize());
+      if (containerRef.current) {
+        ro.observe(containerRef.current);
+      }
+
+      return () => {
+        ro.disconnect();
+      };
+    } catch (err) {
+      console.error('Error starting detection:', err);
+      setError(`Error starting detection: ${err}`);
+      setIsRunning(false);
+
+      if (onStatusChange) {
+        onStatusChange('error');
+      }
+    }
+  };
+
+  // Keep expected label updated for onResults closure
+  useEffect(() => {
+    expectedLabelRef.current = expectedLabel;
+  }, [expectedLabel]);
+
+  // Reset hold state when expected label changes (e.g., auto-advance)
+  useEffect(() => {
+    // Clear any running hold timer and hide alert so the next item can start fresh
+    if (detectionTimerRef.current?.timerId) {
+      clearTimeout(detectionTimerRef.current.timerId);
+    }
+    detectionTimerRef.current = null;
+    setShowHoldAlert(false);
+  }, [expectedLabel]);
+
+  // Stop detection and camera
+  const stopDetection = () => {
+    // Clear any pending detection timer
+    if (detectionTimerRef.current?.timerId) {
+      clearTimeout(detectionTimerRef.current.timerId);
+      detectionTimerRef.current = null;
+      setShowHoldAlert(false);
+    }
+
+    setIsRunning(false);
+    setCurrentDetectedLabel(null);
+
+    try {
+      if (cameraRef.current) {
+        cameraRef.current.stop();
+        cameraRef.current = null;
+      }
+    } catch (e) {
+      console.warn('Error stopping camera:', e);
+    }
+
+    const stream = videoRef.current?.srcObject;
+    if (stream) {
+      try {
+        const tracks = (stream as MediaStream).getTracks();
+        for (const track of tracks) {
+          track.stop();
+        }
+        if (videoRef.current) {
+          videoRef.current.srcObject = null;
+        }
+      } catch (e) {
+        console.warn('Error stopping video tracks:', e);
+      }
+    }
+
+    if (onStatusChange) {
+      onStatusChange('inactive');
+    }
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className={`relative ${containerClassName}`}
+      style={{ width: '100%', aspectRatio: '4/3' }}
+    >
+      <video
+        ref={videoRef}
+        className="absolute top-0 left-0 w-0 h-0 invisible"
+        autoPlay
+        playsInline
+        muted
+      />
+      <canvas
+        ref={canvasRef}
+        className="absolute top-0 left-0 w-full h-full pointer-events-none"
+      />
+      {error && (
+        <div className="absolute top-2 left-2 bg-red-500/90 text-white px-2 py-1 text-sm rounded">
+          {error}
+        </div>
+      )}
+      {!isRunning && !error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white">
+          <div className="text-center">
+            <div className="text-xl font-semibold mb-2">Menyiapkan kamera</div>
+            <div className="text-sm text-white/70">
+              Memuat model & MediaPipe...
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Current detection display */}
+      {currentDetectedLabel && (
+        <div className="absolute top-2 right-2 bg-black/60 text-white px-3 py-1.5 text-sm rounded">
+          Deteksi: <span className="font-bold">{currentDetectedLabel}</span>
+        </div>
+      )}
+
+      {/* Hold alert overlay */}
+      {showHoldAlert && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="bg-green-600/50 backdrop-blur-sm px-6 py-4 rounded-lg shadow-lg text-white text-center">
+            <div className="text-xl font-bold mb-2">Posisi Benar!</div>
+            <div className="text-base">
+              Tahan posisi selama {holdDuration} detik
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hold timer display */}
+      {detectionTimerRef.current && (
+        <div className="absolute bottom-2 left-2 bg-black/60 text-white px-3 py-1.5 text-sm rounded">
+          Tahan:{' '}
+          {Math.min(
+            holdDuration,
+            (Date.now() - detectionTimerRef.current.startTime) / 1000
+          ).toFixed(1)}
+          s / {holdDuration}s
+        </div>
+      )}
+    </div>
+  );
+}
