@@ -410,48 +410,6 @@ export function HandDetection({
                 timerId,
               };
             }
-
-            // Draw hold progress
-            if (detectionTimerRef.current) {
-              const elapsedSeconds =
-                (now - detectionTimerRef.current.startTime) / 1000;
-              const progress = Math.min(1, elapsedSeconds / holdDuration);
-
-              // Draw progress indicator at the bottom of the screen
-              ctx.restore();
-              ctx.save();
-
-              const progressWidth = canvas.width * 0.6;
-              const progressHeight = 8;
-              const progressX = (canvas.width - progressWidth) / 2;
-              const progressY = canvas.height - 20;
-
-              // Background
-              ctx.fillStyle = 'rgba(0,0,0,0.5)';
-              ctx.beginPath();
-              drawRoundedRect(
-                ctx,
-                progressX,
-                progressY,
-                progressWidth,
-                progressHeight,
-                4
-              );
-              ctx.fill();
-
-              // Progress bar
-              ctx.fillStyle = 'rgba(52, 211, 153, 0.9)'; // Green color
-              ctx.beginPath();
-              drawRoundedRect(
-                ctx,
-                progressX,
-                progressY,
-                progressWidth * progress,
-                progressHeight,
-                4
-              );
-              ctx.fill();
-            }
           } else {
             // No valid detection or doesn't match expected label, clear timer
             if (detectionTimerRef.current?.timerId) {
@@ -622,18 +580,6 @@ export function HandDetection({
               Tahan posisi selama {holdDuration} detik
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Hold timer display */}
-      {detectionTimerRef.current && (
-        <div className="absolute bottom-2 left-2 bg-black/60 text-white px-3 py-1.5 text-sm rounded">
-          Tahan:{' '}
-          {Math.min(
-            holdDuration,
-            (Date.now() - detectionTimerRef.current.startTime) / 1000
-          ).toFixed(1)}
-          s / {holdDuration}s
         </div>
       )}
     </div>
