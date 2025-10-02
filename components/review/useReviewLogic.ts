@@ -194,6 +194,9 @@ export function useReviewLogic(initialCategory: CategoryType) {
 
   // Calculate results
   const rememberedCount = reviewItems.filter((item) => item.remembered).length;
+  const accuracy = reviewItems.length
+    ? Math.round((rememberedCount / reviewItems.length) * 100)
+    : 0;
   // Clean up resources when component unmounts
   useEffect(() => {
     return () => {
@@ -215,6 +218,7 @@ export function useReviewLogic(initialCategory: CategoryType) {
     showHint,
     categoryStatus,
     rememberedCount,
+    accuracy,
     selectCategory,
     startReview,
     skipItem,
