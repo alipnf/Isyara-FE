@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   CategorySelectionCard,
@@ -15,7 +16,7 @@ import {
   CategoryType,
 } from '@/components/review';
 
-export default function ReviewPage() {
+function ReviewPageContent() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category') || 'huruf';
 
@@ -152,5 +153,13 @@ export default function ReviewPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ReviewPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Memuat...</div>}>
+      <ReviewPageContent />
+    </Suspense>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   CameraSection,
@@ -13,7 +13,7 @@ import {
   type CategoryKey,
 } from '@/components/lesson';
 
-export default function LessonPage() {
+function LessonPageContent() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category') || 'huruf';
   const groupParam = searchParams.get('group') || '';
@@ -90,5 +90,13 @@ export default function LessonPage() {
 
       <CompletionDialog open={showCompletion} categoryName={selectedCategory} />
     </div>
+  );
+}
+
+export default function LessonPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Memuat...</div>}>
+      <LessonPageContent />
+    </Suspense>
   );
 }
