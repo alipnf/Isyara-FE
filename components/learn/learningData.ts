@@ -37,7 +37,7 @@ export const learningUnits: LearningUnit[] = [
         title: 'Huruf P-T',
         completed: false,
         type: 'lesson' as const,
-        locked: true,
+        // Unlocked: previously locked
         hurufRange: ['P', 'Q', 'R', 'S', 'T'],
         progress: 0,
       },
@@ -46,7 +46,7 @@ export const learningUnits: LearningUnit[] = [
         title: 'Huruf U-Z',
         completed: false,
         type: 'lesson' as const,
-        locked: true,
+        // Unlocked: previously locked
         hurufRange: ['U', 'V', 'W', 'X', 'Y', 'Z'],
         progress: 0,
       },
@@ -55,7 +55,7 @@ export const learningUnits: LearningUnit[] = [
         title: 'Kuis Huruf',
         completed: false,
         type: 'quiz' as const,
-        locked: true,
+        // Unlocked: previously locked
         progress: 0,
       },
     ],
@@ -108,4 +108,3 @@ export const learningUnits: LearningUnit[] = [
     comingSoon: true,
   },
 ];
-
