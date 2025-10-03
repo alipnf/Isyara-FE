@@ -43,6 +43,9 @@ export function HandDetection({
   const cameraRef = useRef<any>(null);
   const [model, setModel] = useState<tf.LayersModel | null>(null);
   const [classes, setClasses] = useState<string[]>([]);
+  const [handRequirements, setHandRequirements] = useState<
+    Record<string, 'single' | 'two' | 'flexible' | string>
+  >({});
   const [error, setError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const lastDimsRef = useRef({
@@ -59,6 +62,7 @@ export function HandDetection({
   const expectedLabelRef = useRef<string>(expectedLabel);
   const onDetectionRef = useRef<typeof onDetection>(onDetection);
   const onLiveUpdateRef = useRef<typeof onLiveUpdate>(onLiveUpdate);
+  const [handReqMessage, setHandReqMessage] = useState<string | null>(null);
 
   // References for hold timer
   const detectionTimerRef = useRef<{
@@ -134,8 +138,8 @@ export function HandDetection({
           throw lastErr || new Error('All paths failed');
         };
 
-        // Load model and classes in parallel
-        const [loadedModel, cls] = await Promise.all([
+        // Load model and classes metadata in parallel
+        const [loadedModel, meta] = await Promise.all([
           tryPaths([modelPath, '/model.json', 'models/model.json'], (u) =>
             tf.loadLayersModel(u)
           ),
@@ -144,8 +148,7 @@ export function HandDetection({
             async (u) => {
               const r = await fetch(u);
               if (!r.ok) throw new Error(`HTTP ${r.status} on ${u}`);
-              const j = await r.json();
-              return j.classes || j;
+              return await r.json();
             }
           ),
         ]);
@@ -153,7 +156,12 @@ export function HandDetection({
         if (!mounted) return;
 
         setModel(loadedModel);
-        setClasses(cls);
+        const loadedClasses = Array.isArray(meta)
+          ? (meta as string[])
+          : meta.classes || [];
+        setClasses(loadedClasses);
+        const reqs = (meta && meta.hand_requirements) || {};
+        setHandRequirements(reqs);
 
         if (onStatusChange) {
           onStatusChange('inactive');
@@ -308,30 +316,16 @@ export function HandDetection({
           results.multiHandLandmarks &&
           results.multiHandLandmarks.length
         ) {
-          // Consider up to first two hands as in the Python script
-          const hands = results.multiHandLandmarks.slice(0, 2);
-          // Track any-best (for display) and threshold-best (for hold logic)
-          let bestConfAny = -1;
-          let bestLabelAny = '';
-          let bestConf = -1;
-          let bestLabel = '';
-          // Track confidence for the expected label specifically (for UI percentage)
-          const currentExpected = expectedLabelRef.current || '';
-          const expectedIdx = currentExpected
-            ? classes.indexOf(currentExpected)
-            : -1;
-          let expectedConf = 0;
-
-          for (let i = 0; i < hands.length; i++) {
-            const feat = extractFeatures(hands[i]);
-            if (!feat) continue;
-
-            const input = tf.tensor(feat, [1, 63], 'float32');
+          // Build combined features for up to 2 hands: 127 dims (63x2 + hand_count)
+          const feat = extractFeatures(results.multiHandLandmarks);
+          if (feat) {
+            const input = tf.tensor(feat, [1, 127], 'float32');
             const probs = model.predict(input) as tf.Tensor;
             const pData = probs.dataSync();
             input.dispose();
             probs.dispose();
 
+            // Argmax label
             let bestIdx = 0;
             for (let j = 1; j < pData.length; j++) {
               if (pData[j] > pData[bestIdx]) bestIdx = j;
@@ -340,85 +334,116 @@ export function HandDetection({
             const conf = pData[bestIdx];
             const lbl = classes[bestIdx] ?? `${bestIdx}`;
 
-            // Track best regardless of threshold for UI
-            if (conf > bestConfAny) {
-              bestConfAny = conf;
-              bestLabelAny = lbl;
+            // For UI
+            let bestConfAny = conf;
+            let bestLabelAny = lbl;
+            let bestConf = conf >= confidenceThreshold ? conf : -1;
+            let bestLabel = bestConf >= 0 ? lbl : '';
+
+            // Confidence for expected label (if provided)
+            const currentExpected = expectedLabelRef.current || '';
+            const expectedIdx = currentExpected
+              ? classes.indexOf(currentExpected)
+              : -1;
+            const expectedConf = expectedIdx >= 0 ? pData[expectedIdx] : 0;
+
+            // Validate hand count vs requirement for expected label
+            let isHandCountValid = true;
+            let validationMsg: string | null = null;
+            if (currentExpected) {
+              const detectedCount = Math.min(
+                2,
+                results.multiHandLandmarks.length
+              );
+              const req =
+                (handRequirements?.[currentExpected] as string) || 'single';
+              if (req === 'single' && detectedCount !== 1) {
+                isHandCountValid = false;
+                validationMsg =
+                  'Gunakan 1 tangan untuk huruf ' + currentExpected;
+              } else if (req === 'two' && detectedCount !== 2) {
+                isHandCountValid = false;
+                validationMsg =
+                  'Gunakan 2 tangan untuk huruf ' + currentExpected;
+              } else if (req === 'flexible') {
+                isHandCountValid = true;
+                validationMsg = null;
+              }
             }
-            // Track best only if passes threshold for hold logic
-            if (conf > bestConf && conf >= confidenceThreshold) {
-              bestConf = conf;
-              bestLabel = lbl;
+            setHandReqMessage(validationMsg);
+
+            // Always show the best current label (even if below threshold)
+            if (bestLabelAny) {
+              setCurrentDetectedLabel(bestLabelAny);
+            } else {
+              setCurrentDetectedLabel(null);
             }
+            // Emit live update using expected label confidence percent (0-100)
+            onLiveUpdateRef.current?.(
+              bestLabelAny || null,
+              Math.round(Math.max(0, Math.min(1, expectedConf)) * 100)
+            );
 
-            // Track confidence for the expected label (max across hands)
-            if (expectedIdx >= 0) {
-              const econf = pData[expectedIdx];
-              if (econf > expectedConf) expectedConf = econf;
-            }
-          }
+            // Handle the hold duration timer - only start timer if the detected label matches expected label and hand count is valid
+            const now = Date.now();
+            const isCorrectGesture =
+              !!currentExpected && bestLabel === currentExpected;
 
-          // Always show the best current label (even if below threshold)
-          if (bestLabelAny) {
-            setCurrentDetectedLabel(bestLabelAny);
-          } else {
-            setCurrentDetectedLabel(null);
-          }
-          // Emit live update using expected label confidence percent (0-100)
-          onLiveUpdateRef.current?.(
-            bestLabelAny || null,
-            Math.round(Math.max(0, Math.min(1, expectedConf)) * 100)
-          );
-
-          // Handle the hold duration timer - only start timer if the detected label matches expected label
-          const now = Date.now();
-          const isCorrectGesture =
-            !!currentExpected && bestLabel === currentExpected;
-
-          // If we have a valid detection and it matches the expected label
-          if (bestConf >= confidenceThreshold && isCorrectGesture) {
-            // Show hold alert when correct gesture is detected
-            setShowHoldAlert(true);
-
-            // If there's no current timer or the label changed, start a new timer
+            // If we have a valid detection and it matches the expected label
             if (
-              !detectionTimerRef.current ||
-              detectionTimerRef.current.label !== bestLabel
+              bestConf >= confidenceThreshold &&
+              isCorrectGesture &&
+              isHandCountValid
             ) {
-              // Clear any existing timer
+              // Show hold alert when correct gesture is detected
+              setShowHoldAlert(true);
+
+              // If there's no current timer or the label changed, start a new timer
+              if (
+                !detectionTimerRef.current ||
+                detectionTimerRef.current.label !== bestLabel
+              ) {
+                // Clear any existing timer
+                if (detectionTimerRef.current?.timerId) {
+                  clearTimeout(detectionTimerRef.current.timerId);
+                }
+
+                // Start a new timer
+                const timerId = setTimeout(() => {
+                  if (onDetectionRef.current && detectionTimerRef.current) {
+                    onDetectionRef.current(
+                      detectionTimerRef.current.label,
+                      detectionTimerRef.current.confidence
+                    );
+                  }
+                  detectionTimerRef.current = null;
+                  setShowHoldAlert(false);
+                }, holdDuration * 1000);
+
+                // Store the new timer details
+                detectionTimerRef.current = {
+                  label: bestLabel,
+                  confidence: bestConf * 100,
+                  startTime: now,
+                  timerId,
+                };
+              }
+            } else {
+              // No valid detection or doesn't match expected label, clear timer
               if (detectionTimerRef.current?.timerId) {
                 clearTimeout(detectionTimerRef.current.timerId);
-              }
-
-              // Start a new timer
-              const timerId = setTimeout(() => {
-                if (onDetectionRef.current && detectionTimerRef.current) {
-                  onDetectionRef.current(
-                    detectionTimerRef.current.label,
-                    detectionTimerRef.current.confidence
-                  );
-                }
                 detectionTimerRef.current = null;
                 setShowHoldAlert(false);
-              }, holdDuration * 1000);
-
-              // Store the new timer details
-              detectionTimerRef.current = {
-                label: bestLabel,
-                confidence: bestConf * 100,
-                startTime: now,
-                timerId,
-              };
+              }
             }
           } else {
-            // No valid detection or doesn't match expected label, clear timer
-            if (detectionTimerRef.current?.timerId) {
-              clearTimeout(detectionTimerRef.current.timerId);
-              detectionTimerRef.current = null;
-              setShowHoldAlert(false);
-            }
+            setCurrentDetectedLabel(null);
+            onLiveUpdateRef.current?.(null, 0);
           }
+
+          // Close outer if (model && landmarks)
         } else {
+          // Model not loaded or no landmarks
           setCurrentDetectedLabel(null);
           onLiveUpdateRef.current?.(null, 0);
         }
@@ -551,6 +576,11 @@ export function HandDetection({
       {error && (
         <div className="absolute top-2 left-2 bg-red-500/90 text-white px-2 py-1 text-sm rounded">
           {error}
+        </div>
+      )}
+      {handReqMessage && !error && (
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-red-600/90 text-white px-3 py-1.5 text-sm rounded shadow">
+          {handReqMessage}
         </div>
       )}
       {!isRunning && !error && (
