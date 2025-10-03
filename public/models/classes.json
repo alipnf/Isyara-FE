@@ -26,5 +26,58 @@
     "X",
     "Y",
     "Z"
-  ]
+  ],
+  "hand_requirements": {
+    "A": "single",
+    "B": "two",
+    "C": "single",
+    "D": "two",
+    "E": "single",
+    "F": "two",
+    "G": "two",
+    "H": "two",
+    "I": "single",
+    "J": "single",
+    "K": "two",
+    "L": "single",
+    "M": "two",
+    "N": "single",
+    "O": "single",
+    "P": "two",
+    "Q": "two",
+    "R": "single",
+    "S": "two",
+    "T": "two",
+    "U": "single",
+    "V": "single",
+    "W": "two",
+    "X": "two",
+    "Y": "single",
+    "Z": "single"
+  },
+  "dataset_stats": {
+    "total_classes": 26,
+    "single_hand_classes": 13,
+    "two_hand_classes": 13,
+    "total_samples": 2033,
+    "train_samples": 1423,
+    "val_samples": 305,
+    "test_samples": 305
+  },
+  "model_info": {
+    "input_dim": 127,
+    "num_classes": 26,
+    "architecture": "MLP",
+    "layers": [
+      512,
+      256,
+      128,
+      64
+    ]
+  },
+  "training_info": {
+    "epochs_ran": 77,
+    "final_val_accuracy": 0.9704918265342712,
+    "best_val_accuracy": 0.9704918265342712
+  }
 }
