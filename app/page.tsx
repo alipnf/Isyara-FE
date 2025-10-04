@@ -1,5 +1,3 @@
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -7,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { BookOpen, Camera, Users, Zap, Shield } from 'lucide-react';
+import { Camera, Users, Zap } from 'lucide-react';
 
 export default function Home() {
   const features = [
@@ -65,14 +63,6 @@ export default function Home() {
             pencatatan progres, dan deteksi tangan real-time untuk pengalaman
             belajar BISINDO yang menyenangkan dan efektif.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="text-lg px-8 py-6">
-              <Link href="/learn">
-                <BookOpen className="mr-2 h-5 w-5" />
-                Mulai Belajar
-              </Link>
-            </Button>
-          </div>
         </div>
       </section>
 
