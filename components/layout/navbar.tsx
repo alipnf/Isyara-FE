@@ -22,12 +22,20 @@ import {
 export function Navbar() {
   const pathname = usePathname();
 
-  const navigationItems = [
+  // Simulate authentication state (replace with actual auth logic)
+  const isAuthenticated = true;
+
+  // Navigation items for unauthenticated users
+  const unauthenticatedItems = [
     {
-      name: 'Beranda',
-      href: '/',
-      icon: Home,
+      name: 'Mulai Belajar',
+      href: '/auth/login',
+      icon: GraduationCap,
     },
+  ];
+
+  // Navigation items for authenticated users
+  const authenticatedItems = [
     {
       name: 'Belajar',
       href: '/learn',
@@ -50,6 +58,10 @@ export function Navbar() {
     },
   ];
 
+  const navigationItems = isAuthenticated
+    ? authenticatedItems
+    : unauthenticatedItems;
+
   return (
     <>
       <header className="bg-background border-b sticky top-0 z-50">
@@ -63,12 +75,18 @@ export function Navbar() {
               {navigationItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
+                const isUnauthenticatedButton =
+                  !isAuthenticated && item.name === 'Mulai Belajar';
                 return (
                   <Link key={item.name} href={item.href}>
                     <Button
-                      variant={isActive ? 'default' : 'ghost'}
+                      variant={
+                        isActive || isUnauthenticatedButton
+                          ? 'default'
+                          : 'ghost'
+                      }
                       className={`flex items-center space-x-2 ${
-                        isActive
+                        isActive || isUnauthenticatedButton
                           ? 'bg-primary text-white'
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
@@ -93,13 +111,15 @@ export function Navbar() {
                   {navigationItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = pathname === item.href;
+                    const isUnauthenticatedButton =
+                      !isAuthenticated && item.name === 'Mulai Belajar';
                     return (
                       <DropdownMenuItem asChild key={item.name}>
                         <Link
                           href={item.href}
                           className={cn(
                             'w-full flex items-center space-x-2',
-                            isActive
+                            isActive || isUnauthenticatedButton
                               ? 'text-primary bg-primary/10'
                               : 'text-foreground'
                           )}
