@@ -10,15 +10,17 @@ interface ConditionalLayoutProps {
 
 export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const pathname = usePathname();
-  
+
   // Hide navbar and footer on auth pages
   const isAuthPage = pathname.startsWith('/auth/');
-  
+
   return (
     <>
       {!isAuthPage && <Navbar />}
-      {children}
-      {!isAuthPage && <Footer />}
+      <main className={!isAuthPage ? 'md:ml-64' : ''}>
+        {children}
+        {!isAuthPage && <Footer />}
+      </main>
     </>
   );
 }
