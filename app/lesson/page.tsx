@@ -8,7 +8,6 @@ import { X } from 'lucide-react';
 import {
   CameraSection,
   ReferenceCard,
-  ItemGrid,
   CompletionDialog,
   useLessonLogic,
   categories,
@@ -42,8 +41,6 @@ function LessonPageContent() {
     handleCameraStatusChange,
     toggleCamera,
     resetSession,
-    goToNextItem,
-    goToPreviousItem,
     handleItemSelect,
   } = useLessonLogic(selectedCategory, groupParam);
 
@@ -91,24 +88,14 @@ function LessonPageContent() {
             />
           </div>
 
-          {/* Reference Card and Item Grid - Right side */}
+          {/* Reference Card (includes pose + grid) - Right side */}
           <div className="space-y-6">
             <ReferenceCard
               categoryName={categories[selectedCategory].name}
               selectedItem={selectedItem}
               selectedCategory={selectedCategory}
-              completedItemsSize={completedItems.size}
-              groupItemsLength={groupItems.length}
-              onPrevious={goToPreviousItem}
-              onNext={goToNextItem}
-            />
-
-            {/* Item Grid - Below Reference Card */}
-            <ItemGrid
               groupItems={groupItems}
-              selectedItem={selectedItem}
               completedItems={completedItems}
-              selectedCategory={selectedCategory}
               onItemSelect={handleItemSelect}
             />
           </div>

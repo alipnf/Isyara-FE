@@ -6,26 +6,24 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { CategoryKey } from './types';
 
 interface ReferenceCardProps {
   categoryName: string;
   selectedItem: string;
   selectedCategory: CategoryKey;
-  completedItemsSize: number;
-  groupItemsLength: number;
-  onPrevious: () => void;
-  onNext: () => void;
+  groupItems: string[];
+  completedItems: Set<string>;
+  onItemSelect: (item: string) => void;
 }
 
 export function ReferenceCard({
   categoryName,
   selectedItem,
   selectedCategory,
-  onPrevious,
-  onNext,
+  groupItems,
+  completedItems,
+  onItemSelect,
 }: ReferenceCardProps) {
   return (
     <div className="space-y-4">
@@ -52,24 +50,35 @@ export function ReferenceCard({
                 loading="lazy"
               />
             </div>
-            <p className="text-xs md:text-sm text-muted-foreground mt-2 text-center">
-              Pastikan posisi tangan jelas dan stabil.
-            </p>
 
-            {/* Navigation Controls */}
-            <div className="flex justify-between items-center mt-4">
-              <Button variant="outline" size="sm" onClick={onPrevious}>
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Sebelumnya
-              </Button>
-              <div className="text-sm text-center">
-                <Badge variant="outline">{selectedItem}</Badge>
+            {/* Inline Item */}
+            <div className="space-y-2 mt-5">
+              <div className="flex justify-between gap-2">
+                {groupItems.map((item) => {
+                  const isSelected = selectedItem === item;
+                  const isDone = completedItems.has(item);
+                  const variant = isSelected || isDone ? 'default' : 'outline';
+                  return (
+                    <Button
+                      key={item}
+                      variant={variant as any}
+                      size="sm"
+                      onClick={() => onItemSelect(item)}
+                      className={`aspect-square p-0 font-semibold ${
+                        isDone
+                          ? 'bg-green-500 text-white border-green-500 hover:bg-green-600'
+                          : ''
+                      } ${selectedCategory === 'kata' ? 'text-xs' : ''}`}
+                      title={isDone ? 'Sudah benar' : 'Belum selesai'}
+                    >
+                      {item}
+                    </Button>
+                  );
+                })}
               </div>
-              <Button variant="outline" size="sm" onClick={onNext}>
-                Selanjutnya
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
             </div>
+
+            {/* No middle badge; selection shown by button state */}
           </div>
         </CardContent>
       </Card>
