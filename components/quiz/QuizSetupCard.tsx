@@ -43,7 +43,7 @@ export function QuizSetupCard({
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center gap-4 mb-6">
         <Button variant="outline" onClick={onBack}>
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -59,42 +59,58 @@ export function QuizSetupCard({
         </div>
       </div>
 
-      <Card className="text-center">
-        <CardHeader>
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Brain className="h-8 w-8 text-primary" />
-          </div>
-          <CardTitle className="text-2xl">
-            Kuis {categories[selectedCategory].name}
-          </CardTitle>
-          <CardDescription>
-            Uji kemampuan Anda dengan soal acak dalam waktu terbatas
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Quiz Rules */}
-          <div className="bg-muted/50 rounded-lg p-6 text-left">
-            <h3 className="font-semibold mb-4">Aturan Kuis:</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                • {Math.min(10, categories[selectedCategory].items.length)} soal
-                acak dari kategori {categories[selectedCategory].name}
-              </li>
-              <li>• Waktu 15 detik per soal</li>
-              <li>• Tunjukkan gerakan tangan sesuai yang diminta</li>
-              <li>• Skor minimum 70% untuk lulus</li>
-            </ul>
-          </div>
+      <div className="grid lg:grid-cols-2 gap-8">
+        {/* Left Card: Quiz Info & Rules */}
+        <Card>
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Brain className="h-8 w-8 text-primary" />
+            </div>
+            <CardTitle className="text-2xl">
+              Kuis {categories[selectedCategory].name}
+            </CardTitle>
+            <CardDescription>
+              Uji kemampuan Anda dengan soal acak dalam waktu terbatas
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Quiz Rules */}
+            <div className="bg-muted/50 rounded-lg p-6 text-left">
+              <h3 className="font-semibold mb-4">Aturan Kuis:</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  • {Math.min(10, categories[selectedCategory].items.length)}{' '}
+                  soal acak dari kategori {categories[selectedCategory].name}
+                </li>
+                <li>• Waktu 15 detik per soal</li>
+                <li>• Tunjukkan gerakan tangan sesuai yang diminta</li>
+                <li>• Skor minimum 70% untuk lulus</li>
+              </ul>
+            </div>
 
-          {/* Camera Setup */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div className="flex items-center gap-3">
-                <Camera className="h-5 w-5 text-muted-foreground" />
-                <span className="font-medium">Kamera</span>
+            <Button
+              onClick={handleStartQuiz}
+              size="lg"
+              className="w-full"
+              disabled={!cameraEnabled}
+            >
+              <Play className="h-5 w-5 mr-2" />
+              Mulai Kuis {categories[selectedCategory].name}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Right Card: Camera Setup */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Camera className="h-5 w-5" />
+                Kamera
               </div>
               <Button
                 variant="outline"
+                size="sm"
                 onClick={onToggleCamera}
                 className={
                   cameraEnabled ? 'bg-primary text-primary-foreground' : ''
@@ -102,8 +118,9 @@ export function QuizSetupCard({
               >
                 {cameraEnabled ? 'Aktif' : 'Nonaktif'}
               </Button>
-            </div>
-
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             {cameraEnabled ? (
               <div className="aspect-video bg-muted rounded-lg relative overflow-hidden">
                 <HandDetection
@@ -128,19 +145,9 @@ export function QuizSetupCard({
                 </div>
               </div>
             )}
-          </div>
-
-          <Button
-            onClick={handleStartQuiz}
-            size="lg"
-            className="w-full"
-            disabled={!cameraEnabled}
-          >
-            <Play className="h-5 w-5 mr-2" />
-            Mulai Kuis {categories[selectedCategory].name}
-          </Button>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
