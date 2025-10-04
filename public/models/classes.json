@@ -76,8 +76,8 @@
     ]
   },
   "training_info": {
-    "epochs_ran": 77,
-    "final_val_accuracy": 0.9704918265342712,
+    "epochs_ran": 42,
+    "final_val_accuracy": 0.9639344215393066,
     "best_val_accuracy": 0.9704918265342712
   }
 }
