@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CategoryKey } from './types';
 
 interface ItemGridProps {
@@ -18,31 +17,10 @@ export function ItemGrid({
   selectedCategory,
   onItemSelect,
 }: ItemGridProps) {
-  const progressPercentage = groupItems.length
-    ? Math.round((completedItems.size / groupItems.length) * 100)
-    : 0;
-
   return (
     <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-1.5">
-              <p className="text-sm text-muted-foreground">Progress</p>
-              <p className="text-sm font-semibold text-primary">
-                {progressPercentage}%
-              </p>
-            </div>
-            <Progress
-              value={
-                groupItems.length
-                  ? (completedItems.size / groupItems.length) * 100
-                  : 0
-              }
-              className="h-3 w-full"
-            />
-          </div>
-        </div>
+      <CardHeader>
+        <CardTitle>Pilih Huruf</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-5 gap-2">
@@ -72,4 +50,3 @@ export function ItemGrid({
     </Card>
   );
 }
-

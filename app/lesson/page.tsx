@@ -1,7 +1,10 @@
 'use client';
 
-import { Suspense, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Suspense, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { X } from 'lucide-react';
 import {
   CameraSection,
   ReferenceCard,
@@ -15,6 +18,7 @@ import {
 
 function LessonPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const categoryParam = searchParams.get('category') || 'huruf';
   const groupParam = searchParams.get('group') || '';
 
@@ -43,12 +47,32 @@ function LessonPageContent() {
     handleItemSelect,
   } = useLessonLogic(selectedCategory, groupParam);
 
+  const progressValue = useMemo(() => {
+    return groupItems.length
+      ? (completedItems.size / groupItems.length) * 100
+      : 0;
+  }, [groupItems.length, completedItems.size]);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
+        {/* Top header: Exit + Progress */}
+        <div className="mb-6 flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/learn')}
+            className="h-6 w-6 p-0"
+            aria-label="Kembali ke belajar"
+          >
+            <X className="h-3 w-3" />
+          </Button>
+          <Progress value={progressValue} className="h-3 flex-1" />
+        </div>
+
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Camera Feed Section */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2">
             <CameraSection
               cameraEnabled={cameraEnabled}
               isDetecting={isDetecting}
@@ -67,16 +91,19 @@ function LessonPageContent() {
             />
           </div>
 
-          {/* Selection & Instructions */}
+          {/* Reference Card and Item Grid - Right side */}
           <div className="space-y-6">
             <ReferenceCard
               categoryName={categories[selectedCategory].name}
               selectedItem={selectedItem}
               selectedCategory={selectedCategory}
+              completedItemsSize={completedItems.size}
+              groupItemsLength={groupItems.length}
               onPrevious={goToPreviousItem}
               onNext={goToNextItem}
             />
 
+            {/* Item Grid - Below Reference Card */}
             <ItemGrid
               groupItems={groupItems}
               selectedItem={selectedItem}
