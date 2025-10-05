@@ -50,11 +50,25 @@ function LessonPageContent() {
       : 0;
   }, [groupItems.length, completedItems.size]);
 
+  const handlePrevious = () => {
+    const currentIndex = groupItems.indexOf(selectedItem);
+    if (currentIndex > 0) {
+      handleItemSelect(groupItems[currentIndex - 1]);
+    }
+  };
+
+  const handleNext = () => {
+    const currentIndex = groupItems.indexOf(selectedItem);
+    if (currentIndex < groupItems.length - 1) {
+      handleItemSelect(groupItems[currentIndex + 1]);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6">
         {/* Top header: Exit + Progress */}
-        <div className="mb-6 flex items-center gap-2">
+        <div className="mb-4 flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -67,7 +81,7 @@ function LessonPageContent() {
           <Progress value={progressValue} className="h-3 flex-1" />
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6">
           {/* Camera Feed Section */}
           <div className="lg:col-span-2">
             <CameraSection
@@ -84,12 +98,11 @@ function LessonPageContent() {
               onDetection={handleDetection}
               onLiveUpdate={handleLiveUpdate}
               onStatusChange={handleCameraStatusChange}
-              onReset={resetSession}
             />
           </div>
 
           {/* Reference Card (includes pose + grid) - Right side */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             <ReferenceCard
               categoryName={categories[selectedCategory].name}
               selectedItem={selectedItem}
@@ -97,6 +110,8 @@ function LessonPageContent() {
               groupItems={groupItems}
               completedItems={completedItems}
               onItemSelect={handleItemSelect}
+              onPrevious={handlePrevious}
+              onNext={handleNext}
             />
           </div>
         </div>
