@@ -27,8 +27,8 @@ export function QuizQuestionCard({
 
   return (
     <Card className="text-center">
-      <CardHeader>
-        <CardTitle>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">
           Tunjukkan{' '}
           {selectedCategory === 'letters'
             ? 'Huruf'
@@ -37,12 +37,12 @@ export function QuizQuestionCard({
               : 'Kata'}
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="text-4xl font-bold text-primary">{currentItem}</span>
+      <CardContent className="space-y-3">
+        <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+          <span className="text-3xl font-bold text-primary">{currentItem}</span>
         </div>
-        <h3 className="text-2xl font-bold mb-2">{currentItem}</h3>
-        <p className="text-muted-foreground">
+        <h3 className="text-xl font-bold">{currentItem}</h3>
+        <p className="text-sm text-muted-foreground">
           Tunjukkan gerakan tangan untuk {getCategoryLabel()} ini
         </p>
       </CardContent>

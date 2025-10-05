@@ -16,7 +16,7 @@ import {
 
 function QuizPageContent() {
   const router = useRouter();
-  
+
   const {
     quizState,
     selectedCategory,
@@ -48,65 +48,71 @@ function QuizPageContent() {
     <>
       {/* Top header: Exit + Progress - only show during active quiz */}
       {quizState === 'active' && (
-        <div className="mb-6 flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push('/learn')}
-            className="h-6 w-6 p-0"
-            aria-label="Kembali ke belajar"
-          >
-            <X className="h-3 w-3" />
-          </Button>
-          <Progress value={progressValue} className="h-3 flex-1" />
+        <div className="container mx-auto px-4 py-4">
+          <div className="mb-4 flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push('/learn')}
+              className="h-6 w-6 p-0"
+              aria-label="Kembali ke belajar"
+            >
+              <X className="h-3 w-3" />
+            </Button>
+            <Progress value={progressValue} className="h-3 flex-1" />
+          </div>
         </div>
       )}
 
       {quizState === 'setup' && (
-        <QuizSetupCard
-          selectedCategory={selectedCategory}
-          cameraEnabled={cameraEnabled}
-          onBack={goBack}
-          onStartQuiz={startQuiz}
-          onToggleCamera={toggleCamera}
-          onDetection={handleDetection}
-          onLiveUpdate={handleLiveUpdate}
-          onStatusChange={handleStatusChange}
-        />
+        <div className="container mx-auto px-4 py-4">
+          <QuizSetupCard
+            selectedCategory={selectedCategory}
+            cameraEnabled={cameraEnabled}
+            onBack={goBack}
+            onStartQuiz={startQuiz}
+            onToggleCamera={toggleCamera}
+            onDetection={handleDetection}
+            onLiveUpdate={handleLiveUpdate}
+            onStatusChange={handleStatusChange}
+          />
+        </div>
       )}
 
       {quizState === 'active' && (
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-          {/* Left: Camera & Detection (wider) */}
-          <div className="lg:col-span-2">
-            <QuizCameraSection
-              cameraEnabled={cameraEnabled}
-              isDetecting={isDetecting}
-              confidence={confidence}
-              isCorrect={isCorrect}
-              expectedLabel={questions[currentQuestion]?.item || ''}
-              settings={settings}
-              onToggleCamera={toggleCamera}
-              onDetection={handleDetection}
-              onLiveUpdate={handleLiveUpdate}
-              onStatusChange={handleStatusChange}
-              onSettingsChange={handleSettingsChange}
-            />
-          </div>
+        <div className="container mx-auto px-4 py-4">
+          <div className="grid lg:grid-cols-3 gap-4">
+            {/* Left: Camera & Detection (wider) */}
+            <div className="lg:col-span-2">
+              <QuizCameraSection
+                cameraEnabled={cameraEnabled}
+                isDetecting={isDetecting}
+                confidence={confidence}
+                isCorrect={isCorrect}
+                expectedLabel={questions[currentQuestion]?.item || ''}
+                settings={settings}
+                onToggleCamera={toggleCamera}
+                onDetection={handleDetection}
+                onLiveUpdate={handleLiveUpdate}
+                onStatusChange={handleStatusChange}
+                onSettingsChange={handleSettingsChange}
+              />
+            </div>
 
-          {/* Right: Question, Stats */}
-          <div className="space-y-4 sm:space-y-6">
-            <QuizQuestionCard
-              selectedCategory={selectedCategory}
-              currentItem={questions[currentQuestion]?.item || ''}
-            />
-            <QuizStatsCard
-              correctAnswers={correctAnswers}
-              currentQuestion={currentQuestion}
-              timeLeft={timeLeft}
-              totalQuestions={questions.length}
-              answeredQuestions={answeredQuestions}
-            />
+            {/* Right: Question, Stats */}
+            <div className="space-y-3">
+              <QuizQuestionCard
+                selectedCategory={selectedCategory}
+                currentItem={questions[currentQuestion]?.item || ''}
+              />
+              <QuizStatsCard
+                correctAnswers={correctAnswers}
+                currentQuestion={currentQuestion}
+                timeLeft={timeLeft}
+                totalQuestions={questions.length}
+                answeredQuestions={answeredQuestions}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -121,11 +127,9 @@ function QuizPageContent() {
 export default function QuizPage() {
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <Suspense fallback={<div className="p-8 text-center">Memuat...</div>}>
-          <QuizPageContent />
-        </Suspense>
-      </div>
+      <Suspense fallback={<div className="p-8 text-center">Memuat...</div>}>
+        <QuizPageContent />
+      </Suspense>
     </div>
   );
 }
