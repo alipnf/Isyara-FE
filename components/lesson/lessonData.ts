@@ -1,4 +1,4 @@
-import { Category, CategoryKey } from './types';
+import { Category, CategoryKey } from '@type/lesson';
 
 // Define categories object
 export const categories: Record<CategoryKey, Category> = {

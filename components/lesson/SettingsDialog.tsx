@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Settings } from 'lucide-react';
-import { LessonSettings } from './types';
+import { LessonSettings } from '@type/lesson';
 
 interface SettingsDialogProps {
   settings: LessonSettings;

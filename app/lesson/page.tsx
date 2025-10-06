@@ -9,11 +9,11 @@ import {
   CameraSection,
   ReferenceCard,
   CompletionDialog,
-  useLessonLogic,
   categories,
   isCategoryKey,
   type CategoryKey,
 } from '@/components/lesson';
+import { useLessonLogic } from '@hooks/useLessonLogic';
 
 function LessonPageContent() {
   const searchParams = useSearchParams();
@@ -40,7 +40,6 @@ function LessonPageContent() {
     handleLiveUpdate,
     handleCameraStatusChange,
     toggleCamera,
-    resetSession,
     handleItemSelect,
   } = useLessonLogic(selectedCategory, groupParam);
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { CategoryKey, LessonSettings } from './types';
-import { categories } from './lessonData';
+import type { CategoryKey } from '@type/lesson';
+import type { LessonSettings } from '@type/lesson';
+import { categories } from '@components/lesson/lessonData';
 
 export function useLessonLogic(
   selectedCategory: CategoryKey,
@@ -23,7 +24,6 @@ export function useLessonLogic(
     holdDuration: [3],
   });
 
-  // Initialize group items based on URL parameters
   useEffect(() => {
     if (groupParam) {
       const items = groupParam.split(',');
@@ -36,14 +36,12 @@ export function useLessonLogic(
     }
   }, [selectedCategory, groupParam]);
 
-  // Initialize selected item once group items are loaded
   useEffect(() => {
     if (groupItems.length > 0 && !selectedItem) {
       setSelectedItem(groupItems[0]);
     }
   }, [groupItems, selectedItem]);
 
-  // Handle detection success
   const handleDetection = (label: string, detectedConfidence: number) => {
     setConfidence(detectedConfidence);
     const isMatch = label === selectedItem;
@@ -56,7 +54,6 @@ export function useLessonLogic(
         return next;
       });
 
-      // Auto-advance if enabled
       if (settings.autoAdvance) {
         const currentIndex = groupItems.indexOf(selectedItem);
         const completedNow = new Set(completedItems);
@@ -84,12 +81,10 @@ export function useLessonLogic(
     }
   };
 
-  // Live update from HandDetection
-  const handleLiveUpdate = (label: string | null, confidencePct: number) => {
+  const handleLiveUpdate = (_label: string | null, confidencePct: number) => {
     setConfidence(confidencePct);
   };
 
-  // Handle camera status changes
   const handleCameraStatusChange = (
     status: 'inactive' | 'active' | 'error'
   ) => {
@@ -159,4 +154,3 @@ export function useLessonLogic(
     handleItemSelect,
   };
 }
-

@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { CategoryKey } from './types';
+import { CategoryKey } from '@type/lesson';
 
 interface ReferenceCardProps {
   categoryName: string;

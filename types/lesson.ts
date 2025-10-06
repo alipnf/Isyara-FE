@@ -1,4 +1,4 @@
-// Type definitions for lesson components
+// Type definitions for lesson domain
 export interface LessonSettings {
   showHandLandmarks: boolean;
   audioFeedback: boolean;
@@ -23,4 +23,3 @@ export interface LessonState {
   cameraEnabled: boolean;
   isDetecting: boolean;
 }
-

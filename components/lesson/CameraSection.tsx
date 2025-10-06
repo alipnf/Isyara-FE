@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { HandDetection } from '@/components/hand-detection/HandDetection';
 import { Camera, CameraOff, CheckCircle, XCircle } from 'lucide-react';
-import { LessonSettings } from './types';
+import { LessonSettings } from '@type/lesson';
 import { SettingsDialog } from './SettingsDialog';
 
 interface CameraSectionProps {
