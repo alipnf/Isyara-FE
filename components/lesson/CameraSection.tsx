@@ -29,8 +29,6 @@ export function CameraSection({
   confidence,
   isCorrect,
   selectedItem,
-  completedItemsSize,
-  groupItemsLength,
   onToggleCamera,
   onSettingsChange,
   onDetection,
@@ -40,15 +38,15 @@ export function CameraSection({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 flex-1">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-1 min-w-0">
             <span className="text-sm font-medium">Kecocokan Soal</span>
             <span className="text-sm text-muted-foreground">
               {Math.round(confidence)}%
             </span>
             <Progress
               value={Math.max(0, Math.min(100, Math.round(confidence)))}
-              className="h-2.5 flex-1 max-w-[200px]"
+              className="h-3.5 w-full sm:h-2.5 sm:flex-1 sm:max-w-[240px]"
             />
           </div>
           <div className="flex gap-2">
@@ -59,13 +57,18 @@ export function CameraSection({
               className={
                 cameraEnabled ? 'bg-primary text-primary-foreground' : ' '
               }
+              aria-label={
+                cameraEnabled ? 'Nonaktifkan kamera' : 'Aktifkan kamera'
+              }
             >
               {cameraEnabled ? (
-                <Camera className="h-4 w-4 mr-2" />
+                <Camera className="h-4 w-4 mr-0 sm:mr-2" />
               ) : (
-                <CameraOff className="h-4 w-4 mr-2" />
+                <CameraOff className="h-4 w-4 mr-0 sm:mr-2" />
               )}
-              {cameraEnabled ? 'Aktif' : 'Nonaktif'}
+              <span className="hidden sm:inline">
+                {cameraEnabled ? 'Aktif' : 'Nonaktif'}
+              </span>
             </Button>
             <SettingsDialog
               settings={settings}
@@ -106,12 +109,12 @@ export function CameraSection({
         {/* Match Feedback */}
         {isCorrect !== null && (
           <div
-            className={`flex items-center justify-center p-4 rounded-lg mt-4 ${
+            className={`flex items-center justify-center p-3 sm:p-4 rounded-lg mt-3 sm:mt-4 ${
               isCorrect ? 'bg-green-50' : 'bg-red-50'
             }`}
           >
             {isCorrect ? (
-              <div className="flex items-center gap-2 text-green-700">
+              <div className="flex items-center gap-2 text-green-700 text-sm sm:text-base">
                 <CheckCircle className="h-5 w-5" />
                 <span className="font-medium">Gerakan Benar</span>
                 <span className="text-sm text-green-600">
@@ -119,7 +122,7 @@ export function CameraSection({
                 </span>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-red-700">
+              <div className="flex items-center gap-2 text-red-700 text-sm sm:text-base">
                 <XCircle className="h-5 w-5" />
                 <span className="font-medium">Coba Lagi</span>
                 <span className="text-sm text-red-600">

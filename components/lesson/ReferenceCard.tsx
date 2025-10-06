@@ -36,11 +36,11 @@ export function ReferenceCard({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-lg">
             {categoryName} • {selectedItem}
           </CardTitle>
-          <div className="flex gap-1">
+          <div className="flex gap-1 shrink-0">
             <Button
               variant="outline"
               size="sm"
@@ -81,7 +81,7 @@ export function ReferenceCard({
         </div>
 
         {/* Inline Item */}
-        <div className="flex justify-between gap-2">
+        <div className="flex flex-wrap gap-2 sm:justify-between justify-start max-w-full">
           {groupItems.map((item) => {
             const isSelected = selectedItem === item;
             const isDone = completedItems.has(item);
@@ -92,7 +92,7 @@ export function ReferenceCard({
                 variant={variant as any}
                 size="sm"
                 onClick={() => onItemSelect(item)}
-                className={`aspect-square p-0 font-semibold ${
+                className={`aspect-square p-0 font-semibold min-w-8 sm:min-w-9 ${
                   isDone
                     ? 'bg-green-500 text-white border-green-500 hover:bg-green-600'
                     : ''

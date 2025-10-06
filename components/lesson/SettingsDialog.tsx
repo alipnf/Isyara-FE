@@ -25,9 +25,9 @@ export function SettingsDialog({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Settings className="h-4 w-4 mr-2" />
-          Pengaturan
+        <Button variant="outline" size="sm" aria-label="Pengaturan">
+          <Settings className="h-4 w-4 mr-0 sm:mr-2" />
+          <span className="hidden sm:inline">Pengaturan</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -120,4 +120,3 @@ export function SettingsDialog({
     </Dialog>
   );
 }
-

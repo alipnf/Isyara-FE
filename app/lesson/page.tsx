@@ -66,9 +66,9 @@ function LessonPageContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Top header: Exit + Progress */}
-        <div className="mb-4 flex items-center gap-2">
+        <div className="mb-3 sm:mb-4 flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -78,10 +78,10 @@ function LessonPageContent() {
           >
             <X className="h-3 w-3" />
           </Button>
-          <Progress value={progressValue} className="h-3 flex-1" />
+          <Progress value={progressValue} className="h-2 sm:h-3 flex-1" />
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
           {/* Camera Feed Section */}
           <div className="lg:col-span-2">
             <CameraSection
@@ -102,7 +102,7 @@ function LessonPageContent() {
           </div>
 
           {/* Reference Card (includes pose + grid) - Right side */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <ReferenceCard
               categoryName={categories[selectedCategory].name}
               selectedItem={selectedItem}
