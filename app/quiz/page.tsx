@@ -11,8 +11,8 @@ import {
   QuizQuestionCard,
   QuizStatsCard,
   QuizCompletedCard,
-  useQuizLogic,
 } from '@/components/quiz';
+import { useQuizLogic } from '@hooks/useQuizLogic';
 
 function QuizPageContent() {
   const router = useRouter();

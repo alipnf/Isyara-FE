@@ -6,11 +6,11 @@ export { QuizQuestionCard } from './QuizQuestionCard';
 export { QuizStatsCard } from './QuizStatsCard';
 export { QuizTipsCard } from './QuizTipsCard';
 export { QuizCompletedCard } from './QuizCompletedCard';
-export { useQuizLogic } from './useQuizLogic';
+export { useQuizLogic } from '@hooks/useQuizLogic';
 export { categories } from './quizData';
 export type {
   QuizState,
   CategoryType,
   QuizQuestion,
   CategoryData,
-} from './types';
+} from '@type/quiz';

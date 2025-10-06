@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { HandDetection } from '@/components/hand-detection/HandDetection';
 import { Brain, Camera, CameraOff, Play, ArrowLeft } from 'lucide-react';
-import type { CategoryType } from './types';
+import type { CategoryType } from '@type/quiz';
 import { categories } from './quizData';
 
 interface QuizSetupCardProps {

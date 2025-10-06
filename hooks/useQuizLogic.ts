@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import type { QuizState, CategoryType, QuizQuestion } from './types';
-import type { LessonSettings } from '@/components/lesson/types';
-import { categories } from './quizData';
+import type { QuizState, CategoryType, QuizQuestion } from '@type/quiz';
+import type { LessonSettings } from '@type/lesson';
+import { categories } from '@components/quiz/quizData';
 
 export function useQuizLogic() {
   const [quizState, setQuizState] = useState<QuizState>('category');
@@ -16,7 +16,6 @@ export function useQuizLogic() {
   const [isDetecting, setIsDetecting] = useState(false);
   const [userAnswer, setUserAnswer] = useState<string | null>(null);
 
-  // Camera and detection states
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [confidence, setConfidence] = useState(0);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
@@ -24,7 +23,6 @@ export function useQuizLogic() {
     'inactive' | 'active' | 'error'
   >('inactive');
 
-  // Settings state
   const [settings, setSettings] = useState<LessonSettings>({
     showHandLandmarks: true,
     audioFeedback: false,
@@ -41,7 +39,6 @@ export function useQuizLogic() {
       setSelectedCategory(cat as CategoryType);
       setQuizState('setup');
     } else {
-      // Default to letters if no category specified
       setSelectedCategory('letters');
       setQuizState('setup');
     }
@@ -53,7 +50,6 @@ export function useQuizLogic() {
     setQuizState('setup');
   };
 
-  // Generate random quiz questions
   const generateQuiz = () => {
     const items = categories[selectedCategory].items;
     const shuffled = [...items].sort(() => Math.random() - 0.5);
@@ -69,7 +65,6 @@ export function useQuizLogic() {
     setTimeLeft(15);
   };
 
-  // Start quiz
   const startQuiz = () => {
     generateQuiz();
     setQuizState('active');
@@ -77,18 +72,15 @@ export function useQuizLogic() {
     setCameraEnabled(true);
   };
 
-  // Timer effect
   useEffect(() => {
     if (quizState === 'active' && timeLeft > 0) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
     } else if (quizState === 'active' && timeLeft === 0) {
-      // Time's up, move to next question
       nextQuestion(false);
     }
   }, [quizState, timeLeft]);
 
-  // Next question
   const nextQuestion = (correct: boolean) => {
     const updatedQuestions = [...questions];
     updatedQuestions[currentQuestion] = {
@@ -106,18 +98,15 @@ export function useQuizLogic() {
       setIsCorrect(null);
       setConfidence(0);
     } else {
-      // Quiz completed
       setQuizState('completed');
       setIsDetecting(false);
       setCameraEnabled(false);
     }
   };
 
-  // Calculate results
   const correctAnswers = questions.filter((q) => q.correct).length;
   const answeredQuestions = questions.filter((q) => q.answered).length;
 
-  // Reset quiz
   const resetQuiz = () => {
     setQuizState('setup');
     setCurrentQuestion(0);
@@ -132,11 +121,9 @@ export function useQuizLogic() {
   };
 
   const goBack = () => {
-    // Go back to learn page instead of category selection
     window.location.href = '/learn';
   };
 
-  // Camera and detection handlers
   const toggleCamera = () => {
     setCameraEnabled(!cameraEnabled);
   };
@@ -145,9 +132,7 @@ export function useQuizLogic() {
     const currentItem = questions[currentQuestion]?.item;
     const correct = label === currentItem;
     setIsCorrect(correct);
-
     if (correct) {
-      // Auto-advance to next question after successful detection
       setTimeout(() => {
         nextQuestion(true);
       }, 1000);

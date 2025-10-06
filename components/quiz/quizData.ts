@@ -1,4 +1,4 @@
-import type { CategoryData } from './types';
+import type { CategoryData } from '@type/quiz';
 
 export const categories: Record<string, CategoryData> = {
   letters: {

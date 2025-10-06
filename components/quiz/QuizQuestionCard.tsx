@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { CategoryType } from './types';
+import type { CategoryType } from '@type/quiz';
 
 interface QuizQuestionCardProps {
   selectedCategory: CategoryType;

@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Trophy, Target, RotateCcw, TrendingUp } from 'lucide-react';
-import type { QuizQuestion } from './types';
+import type { QuizQuestion } from '@type/quiz';
 
 interface QuizCompletedCardProps {
   questions: QuizQuestion[];
