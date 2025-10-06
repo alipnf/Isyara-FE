@@ -48,8 +48,8 @@ function QuizPageContent() {
     <>
       {/* Top header: Exit + Progress - only show during active quiz */}
       {quizState === 'active' && (
-        <div className="container mx-auto px-4 py-4">
-          <div className="mb-4 flex items-center gap-2">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="mb-3 sm:mb-4 flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -59,7 +59,7 @@ function QuizPageContent() {
             >
               <X className="h-3 w-3" />
             </Button>
-            <Progress value={progressValue} className="h-3 flex-1" />
+            <Progress value={progressValue} className="h-2 sm:h-3 flex-1" />
           </div>
         </div>
       )}
@@ -80,8 +80,8 @@ function QuizPageContent() {
       )}
 
       {quizState === 'active' && (
-        <div className="container mx-auto px-4 py-4">
-          <div className="grid lg:grid-cols-3 gap-4">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Left: Camera & Detection (wider) */}
             <div className="lg:col-span-2">
               <QuizCameraSection
@@ -100,7 +100,7 @@ function QuizPageContent() {
             </div>
 
             {/* Right: Question, Stats */}
-            <div className="space-y-3">
+            <div className="space-y-3 sm:space-y-4">
               <QuizQuestionCard
                 selectedCategory={selectedCategory}
                 currentItem={questions[currentQuestion]?.item || ''}
