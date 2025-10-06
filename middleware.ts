@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const url = new URL(request.url);
   const { pathname, searchParams } = url;
 
@@ -9,37 +10,68 @@ export function middleware(request: NextRequest) {
   // If `code` exists, skip protection for this request.
   const isOAuthCallback = !!searchParams.get('code');
 
-  // Check for Supabase auth cookies set by `@supabase/ssr` browser client
-  const allCookies = request.cookies.getAll();
-  const hasSupabaseCookie = allCookies.some((cookie) =>
-    cookie.name.startsWith('sb-') && cookie.value && cookie.value.length > 5
+  // Create a response instance we can mutate cookies on
+  const res = NextResponse.next();
+
+  // Use Supabase SSR client to reliably check auth session
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll().map((c) => ({
+            name: c.name,
+            value: c.value,
+          }));
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            res.cookies.set(name, value, options);
+          });
+        },
+      },
+    }
   );
 
-  const isAuthenticated = hasSupabaseCookie;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const isAuthenticated = !!user;
+  const isVerified = !!user?.email_confirmed_at;
 
   // If user is authenticated and trying to access home page, redirect to /learn
-  if (isAuthenticated && pathname === '/') {
+  if (isAuthenticated && isVerified && pathname === '/') {
     return NextResponse.redirect(new URL('/learn', request.url));
   }
 
   // Protected paths
-  const protectedPaths = ['/learn', '/review', '/leaderboard', '/profile', '/quiz'];
+  const protectedPaths = [
+    '/learn',
+    '/review',
+    '/leaderboard',
+    '/profile',
+    '/quiz',
+  ];
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
 
   // If not authenticated, block protected pages, except during OAuth callback exchange
-  if (!isAuthenticated && isProtected && !isOAuthCallback) {
+  if ((!isAuthenticated || !isVerified) && isProtected && !isOAuthCallback) {
     return NextResponse.redirect(new URL('/auth/login', request.url));
   }
 
   // If authenticated, block auth pages
   if (
     isAuthenticated &&
-    (pathname.startsWith('/auth/login') || pathname.startsWith('/auth/register'))
+    isVerified &&
+    (pathname.startsWith('/auth/login') ||
+      pathname.startsWith('/auth/register'))
   ) {
     return NextResponse.redirect(new URL('/learn', request.url));
   }
 
-  return NextResponse.next();
+  return res;
 }
 
 export const config = {
