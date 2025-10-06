@@ -45,4 +45,3 @@ export interface UserStats {
   xp: number;
   level: number;
 }
-

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, Play, Lock, Zap, Award, BookOpen } from 'lucide-react';
-import { Lesson } from './types';
+import { Lesson } from '@type/learn';
 
 interface LessonCardProps {
   lesson: Lesson;

@@ -1,4 +1,4 @@
-import { Lesson } from './types';
+import { Lesson } from '@type/learn';
 
 // Function to get lesson route based on lesson type and completion status
 export function getLessonRoute(lesson: Lesson): string {

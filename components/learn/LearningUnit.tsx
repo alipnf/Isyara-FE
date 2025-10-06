@@ -2,7 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Trophy, Lock, Clock } from 'lucide-react';
-import { LearningUnit as LearningUnitType, Lesson } from './types';
+import { LearningUnit as LearningUnitType, Lesson } from '@type/learn';
 import { LessonCard } from './LessonCard';
 
 interface LearningUnitProps {

@@ -7,5 +7,5 @@ export type {
   UserStats,
   LearningUnit as LearningUnitType,
   Lesson,
-} from './types';
+} from '@type/learn';
 

@@ -1,4 +1,4 @@
-import { LearningUnit } from './types';
+import { LearningUnit } from '@type/learn';
 
 // Mock data for learning units
 export const learningUnits: LearningUnit[] = [
