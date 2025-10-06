@@ -83,7 +83,7 @@ export function Sidebar() {
                     className={`w-full justify-start h-14 text-base ${
                       isActive || isUnauthenticatedButton
                         ? 'bg-primary text-white'
-                        : 'text-muted-foreground hover:text-foreground'
+                        : 'text-foreground'
                     }`}
                   >
                     <Icon className="h-5 w-5 mr-3" />

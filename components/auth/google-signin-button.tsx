@@ -1,6 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/stores/authStore';
+import { useState } from 'react';
 
 interface GoogleSignInButtonProps {
   text: string;
@@ -30,19 +32,39 @@ const GoogleIcon = () => (
   </svg>
 );
 
-// Presentational button only (logic removed)
 export function GoogleSignInButton({
   text,
+  loadingText = 'Memproses...',
   className = 'w-full mb-4',
 }: GoogleSignInButtonProps) {
+  const signInWithGoogle = useAuthStore((state) => state.signInWithGoogle);
+  const [loading, setLoading] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) {
+        console.error('Error signing in with Google:', error.message);
+        alert('Terjadi kesalahan saat masuk dengan Google. Silakan coba lagi.');
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      alert('Terjadi kesalahan yang tidak terduga. Silakan coba lagi.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Button
-      onClick={(e) => e.preventDefault()}
+      onClick={handleGoogleSignIn}
       variant="outline"
       className={className}
+      disabled={loading}
     >
       <GoogleIcon />
-      {text}
+      {loading ? loadingText : text}
     </Button>
   );
 }

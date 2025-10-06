@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { ConditionalLayout } from '@/components/layout/conditional-layout';
+import { AuthInitializer } from '@/components/auth/AuthInitializer';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -44,6 +45,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <AuthInitializer />
         <ConditionalLayout>{children}</ConditionalLayout>
       </body>
     </html>
