@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LeaderboardUser } from './types';
+import { LeaderboardUser } from '@type/leaderboard';
 import { getRankIcon, getRankColor } from './utils';
 
 interface TopPodiumProps {
@@ -38,4 +38,3 @@ export default function TopPodium({ users }: TopPodiumProps) {
     </div>
   );
 }
-

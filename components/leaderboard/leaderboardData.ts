@@ -1,4 +1,4 @@
-import { LeaderboardUser, StatsData } from './types';
+import { LeaderboardUser, StatsData } from '@type/leaderboard';
 
 export const leaderboardData: LeaderboardUser[] = [
   {
@@ -108,4 +108,3 @@ export const statsData: StatsData = {
   highestXp: 2850,
   averageXp: 1420,
 };
-

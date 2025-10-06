@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Users, TrendingUp, Zap } from 'lucide-react';
-import { StatsData } from './types';
+import { StatsData } from '@type/leaderboard';
 
 interface StatsCardsProps {
   stats: StatsData;
@@ -45,4 +45,3 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     </div>
   );
 }
-

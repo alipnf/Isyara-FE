@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { LeaderboardUser } from './types';
+import { LeaderboardUser } from '@type/leaderboard';
 
 interface CurrentUserStatsCardProps {
   user: LeaderboardUser;
@@ -47,4 +47,3 @@ export default function CurrentUserStatsCard({
     </Card>
   );
 }
-

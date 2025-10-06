@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users } from 'lucide-react';
-import { LeaderboardUser } from './types';
+import { LeaderboardUser } from '@type/leaderboard';
 import { getRankIcon } from './utils';
 
 interface LeaderboardListProps {
@@ -66,4 +66,3 @@ export default function LeaderboardList({ users }: LeaderboardListProps) {
     </Card>
   );
 }
-

@@ -14,4 +14,3 @@ export interface StatsData {
   highestXp: number;
   averageXp: number;
 }
-
