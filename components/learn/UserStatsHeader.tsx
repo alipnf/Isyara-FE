@@ -1,5 +1,5 @@
 import { Zap, Trophy } from 'lucide-react';
-import { UserStats } from './types';
+import { UserStats } from '@type/learn';
 
 interface UserStatsHeaderProps {
   stats: UserStats;
@@ -35,4 +35,3 @@ export function UserStatsHeader({ stats }: UserStatsHeaderProps) {
     </div>
   );
 }
-

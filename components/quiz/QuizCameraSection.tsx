@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { HandDetection } from '@/components/hand-detection/HandDetection';
 import { SettingsDialog } from '@/components/lesson/SettingsDialog';
 import { Camera, CameraOff, XCircle } from 'lucide-react';
-import type { LessonSettings } from '@/components/lesson/types';
+import type { LessonSettings } from '@type/lesson';
 
 interface QuizCameraSectionProps {
   cameraEnabled: boolean;
