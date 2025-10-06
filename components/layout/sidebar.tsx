@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-export function Navbar() {
+export function Sidebar() {
   const pathname = usePathname();
 
   // Simulate authentication state (replace with actual auth logic)
@@ -56,44 +56,55 @@ export function Navbar() {
     : unauthenticatedItems;
 
   return (
-    <header className="bg-background border-b sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:left-0 bg-background border-r z-50">
+        {/* Logo */}
+        <div className="flex items-center px-6 py-4 border-b">
           <Link href="/" className="flex items-center space-x-2">
             <span className="text-xl font-bold text-primary">Isyara</span>
           </Link>
+        </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-4">
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              const isUnauthenticatedButton =
-                !isAuthenticated && item.name === 'Mulai Belajar';
-              return (
-                <Link key={item.name} href={item.href}>
+        {/* Navigation */}
+        <nav className="flex-1 px-4 py-6 space-y-4">
+          {navigationItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
+            const isUnauthenticatedButton =
+              !isAuthenticated && item.name === 'Mulai Belajar';
+            return (
+              <div key={item.name} className="mb-4">
+                <Link href={item.href}>
                   <Button
                     variant={
                       isActive || isUnauthenticatedButton ? 'default' : 'ghost'
                     }
-                    className={cn(
-                      'flex items-center space-x-2',
+                    className={`w-full justify-start h-14 text-base ${
                       isActive || isUnauthenticatedButton
                         ? 'bg-primary text-white'
                         : 'text-muted-foreground hover:text-foreground'
-                    )}
+                    }`}
                   >
-                    <Icon className="h-4 w-4" />
-                    <span>{item.name}</span>
+                    <Icon className="h-5 w-5 mr-3" />
+                    <span className="font-medium">{item.name}</span>
                   </Button>
                 </Link>
-              );
-            })}
-          </nav>
+              </div>
+            );
+          })}
+        </nav>
+      </aside>
 
-          {/* Mobile Menu */}
-          <div className="md:hidden">
+      {/* Mobile Header */}
+      <header className="md:hidden bg-background border-b sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <Link href="/" className="flex items-center space-x-2">
+              <span className="text-xl font-bold text-primary">Isyara</span>
+            </Link>
+
+            {/* Mobile Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
@@ -127,7 +138,7 @@ export function Navbar() {
             </DropdownMenu>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }

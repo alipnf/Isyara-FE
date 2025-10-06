@@ -20,7 +20,7 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   return (
     <>
       {!shouldHideLayout && <Navbar />}
-      <main className={!shouldHideLayout ? 'md:ml-64' : ''}>
+      <main>
         {children}
         {!shouldHideLayout && <Footer />}
       </main>
