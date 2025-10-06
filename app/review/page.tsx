@@ -55,7 +55,7 @@ function ReviewPageContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Category Selection State */}
         {reviewState === 'category' && !showLocked && (
           <div className="max-w-4xl mx-auto space-y-6">
@@ -112,7 +112,7 @@ function ReviewPageContent() {
 
         {/* Active Review State */}
         {reviewState === 'active' && (
-          <div className="max-w-6xl mx-auto space-y-6">
+          <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
             <ReviewProgressHeader
               currentItem={reviewItems[currentItemIndex]?.item}
               currentIndex={currentItemIndex}
@@ -123,7 +123,7 @@ function ReviewPageContent() {
               onToggleHint={toggleHint}
             />
 
-            <div className="grid lg:grid-cols-2 gap-6">
+            <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
               <ReviewCameraSection
                 isDetecting={isDetecting}
                 currentItem={reviewItems[currentItemIndex]?.item}
