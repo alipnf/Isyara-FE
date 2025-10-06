@@ -2,37 +2,67 @@
 
 import { Suspense, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/ui/password-input';
 import { GoogleSignInButton } from '@/components/auth/google-signin-button';
 import { AuthLayout, AuthSeparator } from '@/components/auth/auth-layout';
 import { useAuthStore } from '@/stores/authStore';
+import { useForm } from 'react-hook-form';
+
+type LoginInputs = {
+  email: string;
+  password: string;
+};
 
 function LoginForm() {
   const signIn = useAuthStore((state) => state.signIn);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<LoginInputs>({
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
+  });
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const onSubmit = handleSubmit(async ({ email, password }) => {
     setLoading(true);
-    setError(null);
-
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-
+    setServerError(null);
+    setSuccess(false);
     try {
       const { error } = await signIn(email, password);
       if (error) {
-        setError(error.message);
+        const msg = error.message.toLowerCase();
+        if (msg.includes('invalid login')) {
+          setError('password', {
+            type: 'server',
+            message: 'Email atau kata sandi salah',
+          });
+        } else if (msg.includes('confirm')) {
+          setError('email', {
+            type: 'server',
+            message: 'Email belum terverifikasi. Silakan cek email.',
+          });
+        } else {
+          setServerError(error.message);
+        }
+      } else {
+        setSuccess(true);
       }
     } catch (err) {
-      setError('Terjadi kesalahan yang tidak terduga. Silakan coba lagi.');
+      setServerError(
+        'Terjadi kesalahan yang tidak terduga. Silakan coba lagi.'
+      );
     } finally {
       setLoading(false);
     }
-  };
+  });
 
   return (
     <AuthLayout
@@ -46,38 +76,66 @@ function LoginForm() {
 
       <AuthSeparator />
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
-          {error}
-        </div>
-      )}
-
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
-            name="email"
             type="email"
             placeholder="nama@contoh.com"
             required
             disabled={loading}
+            aria-invalid={!!errors.email}
+            {...register('email', {
+              required: 'Email wajib diisi',
+              pattern: {
+                value:
+                  /^(?:[a-zA-Z0-9_'^&/+-])+(?:\.(?:[a-zA-Z0-9_'^&/+-])+)*@(?:(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})$/,
+                message: 'Format email tidak valid',
+              },
+            })}
           />
+          {errors.email && (
+            <p className="text-sm text-red-600">{errors.email.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="password">Kata Sandi</Label>
-          <Input
+          <PasswordInput
             id="password"
-            name="password"
-            type="password"
+            placeholder="******"
             required
             disabled={loading}
+            aria-invalid={!!errors.password}
+            {...register('password', {
+              required: 'Kata sandi wajib diisi',
+              minLength: {
+                value: 6,
+                message: 'Kata sandi minimal 6 karakter',
+              },
+            })}
           />
+          {errors.password && (
+            <p className="text-sm text-red-600">{errors.password.message}</p>
+          )}
         </div>
 
+        {serverError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+            {serverError}
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md text-sm">
+            Berhasil masuk. Mengarahkan...
+          </div>
+        )}
+
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Memproses...' : 'Masuk'}
+          {loading && <Spinner className="mr-2" />}
+          Masuk
         </Button>
       </form>
     </AuthLayout>

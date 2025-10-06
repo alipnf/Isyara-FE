@@ -89,11 +89,8 @@ export function Navbar() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-4">
             {loading ? (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                <span className="text-sm text-muted-foreground">
-                  Loading...
-                </span>
               </div>
             ) : (
               navigationItems.map((item) => {
@@ -173,9 +170,8 @@ export function Navbar() {
               <DropdownMenuContent align="end" className="w-56">
                 {loading ? (
                   <DropdownMenuItem disabled>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                      <span>Loading...</span>
                     </div>
                   </DropdownMenuItem>
                 ) : (

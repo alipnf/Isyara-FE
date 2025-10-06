@@ -1,12 +1,12 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { useAuthStore } from '@/stores/authStore';
 import { useState } from 'react';
 
 interface GoogleSignInButtonProps {
   text: string;
-  loadingText?: string;
   className?: string;
 }
 
@@ -34,7 +34,6 @@ const GoogleIcon = () => (
 
 export function GoogleSignInButton({
   text,
-  loadingText = 'Memproses...',
   className = 'w-full mb-4',
 }: GoogleSignInButtonProps) {
   const signInWithGoogle = useAuthStore((state) => state.signInWithGoogle);
@@ -63,8 +62,17 @@ export function GoogleSignInButton({
       className={className}
       disabled={loading}
     >
-      <GoogleIcon />
-      {loading ? loadingText : text}
+      {loading ? (
+        <>
+          <Spinner className="mr-2" />
+          {text}
+        </>
+      ) : (
+        <>
+          <GoogleIcon />
+          {text}
+        </>
+      )}
     </Button>
   );
 }
