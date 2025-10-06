@@ -1,4 +1,4 @@
-import { UserData } from './types';
+import { UserData } from '@type/profile';
 
 interface ProfileStatsCardProps {
   userData: UserData;
@@ -41,4 +41,3 @@ export default function ProfileStatsCard({ userData }: ProfileStatsCardProps) {
     </div>
   );
 }
-

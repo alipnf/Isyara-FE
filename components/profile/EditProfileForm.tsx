@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Save, X, Camera } from 'lucide-react';
-import { UserData, EditData } from './types';
+import { UserData, EditData } from '@type/profile';
 
 interface EditProfileFormProps {
   userData: UserData;
@@ -93,4 +93,3 @@ export default function EditProfileForm({
     </div>
   );
 }
-

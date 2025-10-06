@@ -1,5 +1,5 @@
 import { Progress } from '@/components/ui/progress';
-import { UserData } from './types';
+import { UserData } from '@type/profile';
 
 interface LevelProgressCardProps {
   userData: UserData;
@@ -28,4 +28,3 @@ export default function LevelProgressCard({
     </div>
   );
 }
-

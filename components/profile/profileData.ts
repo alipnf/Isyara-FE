@@ -1,4 +1,4 @@
-import { UserData } from './types';
+import { UserData } from '@type/profile';
 
 export const initialUserData: UserData = {
   name: 'Pengguna ISYARA',
@@ -10,4 +10,3 @@ export const initialUserData: UserData = {
   joinDate: '2024-01-15',
   avatar: null,
 };
-

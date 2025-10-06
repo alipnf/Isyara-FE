@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Edit3 } from 'lucide-react';
-import { UserData } from './types';
+import { UserData } from '@type/profile';
 
 interface ProfileHeaderProps {
   userData: UserData;
@@ -50,4 +50,3 @@ export default function ProfileHeader({
     </div>
   );
 }
-

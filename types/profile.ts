@@ -12,4 +12,3 @@ export interface UserData {
 export interface EditData {
   username: string;
 }
-
