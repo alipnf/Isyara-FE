@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Eye } from 'lucide-react';
-import { CategoryType } from './types';
+import { CategoryType } from '@type/review';
 
 interface ReviewHintSectionProps {
   showHint: boolean;

@@ -10,11 +10,11 @@ import {
   ReviewCameraSection,
   ReviewHintSection,
   ReviewCompletedCard,
-  useReviewLogic,
   categories,
   userProgress,
   CategoryType,
 } from '@/components/review';
+import { useReviewLogic } from '@hooks/useReviewLogic';
 
 function ReviewPageContent() {
   const searchParams = useSearchParams();

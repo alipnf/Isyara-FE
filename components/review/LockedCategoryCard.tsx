@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Lock, AlertTriangle, CheckCircle, ArrowLeft } from 'lucide-react';
-import { CategoryData, LessonKey, LessonProgress } from './types';
+import { CategoryData, LessonKey, LessonProgress } from '@type/review';
 
 interface LockedCategoryCardProps {
   category: CategoryData;

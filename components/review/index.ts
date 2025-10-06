@@ -5,7 +5,7 @@ export { ReviewProgressHeader } from './ReviewProgressHeader';
 export { ReviewCameraSection } from './ReviewCameraSection';
 export { ReviewHintSection } from './ReviewHintSection';
 export { ReviewCompletedCard } from './ReviewCompletedCard';
-export { useReviewLogic } from './useReviewLogic';
+export { useReviewLogic } from '@hooks/useReviewLogic';
 export { categories, userProgress } from './reviewData';
 export type {
   ReviewState,
@@ -15,4 +15,4 @@ export type {
   LessonProgress,
   CategoryData,
   CategoryStatus,
-} from './types';
+} from '@type/review';

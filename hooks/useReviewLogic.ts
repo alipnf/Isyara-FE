@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import {
+import type {
   ReviewState,
   CategoryType,
   ReviewItem,
   CategoryStatus,
   LessonKey,
-} from './types';
-import { categories, userProgress } from './reviewData';
+} from '@type/review';
+import { categories, userProgress } from '@components/review/reviewData';
 
 export function useReviewLogic(initialCategory: CategoryType) {
   const [reviewState, setReviewState] = useState<ReviewState>('category');
@@ -28,11 +28,8 @@ export function useReviewLogic(initialCategory: CategoryType) {
     kata: { unlocked: false, progress: 0 },
   });
 
-  // Check if category is unlocked based on user progress
   useEffect(() => {
     const newStatus = { ...categoryStatus };
-
-    // Check Huruf category
     const hurufLessons = categories.huruf.requiredLessons as LessonKey[];
     const hurufProgress = hurufLessons.map(
       (lesson) => userProgress.lessons[lesson].progress
@@ -44,7 +41,6 @@ export function useReviewLogic(initialCategory: CategoryType) {
       progress: hurufAvgProgress,
     };
 
-    // Check Angka category
     const angkaLessons = categories.angka.requiredLessons as LessonKey[];
     const angkaProgress = angkaLessons.map(
       (lesson) => userProgress.lessons[lesson].progress
@@ -56,7 +52,6 @@ export function useReviewLogic(initialCategory: CategoryType) {
       progress: angkaAvgProgress,
     };
 
-    // Check Kata category
     const kataLessons = categories.kata.requiredLessons as LessonKey[];
     const kataProgress = kataLessons.map(
       (lesson) => userProgress.lessons[lesson].progress
@@ -71,10 +66,8 @@ export function useReviewLogic(initialCategory: CategoryType) {
     setCategoryStatus(newStatus);
   }, []);
 
-  // Handle category selection
   const selectCategory = (category: CategoryType) => {
     setSelectedCategory(category);
-
     if (categoryStatus[category].unlocked) {
       setReviewState('setup');
       setShowLocked(false);
@@ -86,7 +79,6 @@ export function useReviewLogic(initialCategory: CategoryType) {
     }
   };
 
-  // Generate review items
   const generateReviewItems = () => {
     const items = categories[selectedCategory].items;
     const shuffled = [...items].sort(() => Math.random() - 0.5);
@@ -100,7 +92,6 @@ export function useReviewLogic(initialCategory: CategoryType) {
     setCurrentItemIndex(0);
   };
 
-  // Start review
   const startReview = () => {
     if (!cameraEnabled) {
       alert('Silakan aktifkan kamera terlebih dahulu');
@@ -113,7 +104,6 @@ export function useReviewLogic(initialCategory: CategoryType) {
     setShowHint(false);
   };
 
-  // Next item
   const nextItem = (remembered: boolean) => {
     const updatedItems = [...reviewItems];
     updatedItems[currentItemIndex] = {
@@ -122,7 +112,6 @@ export function useReviewLogic(initialCategory: CategoryType) {
       remembered,
     };
     setReviewItems(updatedItems);
-
     if (currentItemIndex < reviewItems.length - 1) {
       setCurrentItemIndex(currentItemIndex + 1);
       setUserAnswer(null);
@@ -134,7 +123,6 @@ export function useReviewLogic(initialCategory: CategoryType) {
     }
   };
 
-  // Skip current item
   const skipItem = () => {
     if (currentItemIndex < reviewItems.length - 1) {
       setCurrentItemIndex(currentItemIndex + 1);
@@ -146,17 +134,13 @@ export function useReviewLogic(initialCategory: CategoryType) {
     }
   };
 
-  // Handle detection
   const handleDetection = (label: string, confidence: number) => {
-    console.log(`Detected: ${label} with confidence ${confidence}%`);
-
     const isCorrect =
       reviewItems[currentItemIndex] &&
       label === reviewItems[currentItemIndex].item;
     nextItem(isCorrect);
   };
 
-  // Handle live updates
   const handleLiveUpdate = (label: string | null, confidence: number) => {
     setCurrentConfidence(confidence);
     if (label) {
@@ -164,7 +148,6 @@ export function useReviewLogic(initialCategory: CategoryType) {
     }
   };
 
-  // Reset review
   const resetReview = () => {
     setIsDetecting(false);
     setReviewState('category');
@@ -176,28 +159,24 @@ export function useReviewLogic(initialCategory: CategoryType) {
     setCameraEnabled(false);
   };
 
-  // Toggle camera
   const toggleCamera = () => {
     setCameraEnabled(!cameraEnabled);
   };
 
-  // Handle camera error
   const handleCameraError = () => {
     setCameraEnabled(false);
     alert('Gagal mengaktifkan kamera. Harap periksa izin kamera Anda.');
   };
 
-  // Toggle hint
   const toggleHint = () => {
     setShowHint(!showHint);
   };
 
-  // Calculate results
   const rememberedCount = reviewItems.filter((item) => item.remembered).length;
   const accuracy = reviewItems.length
     ? Math.round((rememberedCount / reviewItems.length) * 100)
     : 0;
-  // Clean up resources when component unmounts
+
   useEffect(() => {
     return () => {
       setIsDetecting(false);

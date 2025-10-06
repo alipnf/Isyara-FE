@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Trophy, RotateCcw, BookOpen } from 'lucide-react';
-import { ReviewItem } from './types';
+import { ReviewItem } from '@type/review';
 
 interface ReviewCompletedCardProps {
   reviewItems: ReviewItem[];
@@ -96,4 +96,3 @@ export function ReviewCompletedCard({
     </div>
   );
 }
-

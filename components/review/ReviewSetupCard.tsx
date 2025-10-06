@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { HandDetection } from '@/components/hand-detection/HandDetection';
 import { RefreshCcw, Camera, CameraOff, Play, ArrowLeft } from 'lucide-react';
-import { CategoryData } from './types';
+import { CategoryData } from '@type/review';
 
 interface ReviewSetupCardProps {
   category: CategoryData;

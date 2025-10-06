@@ -1,4 +1,9 @@
-import { CategoryType, CategoryData, LessonKey, LessonProgress } from './types';
+import {
+  CategoryType,
+  CategoryData,
+  LessonKey,
+  LessonProgress,
+} from '@type/review';
 
 export const categories: Record<CategoryType, CategoryData> = {
   huruf: {

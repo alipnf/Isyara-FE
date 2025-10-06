@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CategoryType, CategoryData } from './types';
+import { CategoryType, CategoryData } from '@type/review';
 
 interface CategorySelectionCardProps {
   categoryKey: CategoryType;
