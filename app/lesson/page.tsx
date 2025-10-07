@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -14,6 +14,8 @@ import {
   type CategoryKey,
 } from '@/components/lesson';
 import { useLessonLogic } from '@hooks/useLessonLogic';
+import { completeLessonByKey, deriveLessonKey } from '@/utils/learn';
+import { awardProgress } from '@/utils/profile';
 
 function LessonPageContent() {
   const searchParams = useSearchParams();
@@ -48,6 +50,25 @@ function LessonPageContent() {
       ? (completedItems.size / groupItems.length) * 100
       : 0;
   }, [groupItems.length, completedItems.size]);
+
+  // Award XP and mark lesson completion once per session when all items done
+  const prevCompletionRef = useRef(false);
+  useEffect(() => {
+    if (showCompletion && !prevCompletionRef.current) {
+      prevCompletionRef.current = true;
+      // Try to persist completion per-user in DB via RPC
+      const key = deriveLessonKey(selectedCategory, groupParam || '');
+      if (key) {
+        completeLessonByKey(key).catch(() => {
+          // Fallback: still award XP to avoid losing progress feeling
+          awardProgress({ xpDelta: 50, lessonsDelta: 1 }).catch(() => {});
+        });
+      } else {
+        // No key derivable (e.g., words category not seeded yet): fallback award
+        awardProgress({ xpDelta: 50, lessonsDelta: 1 }).catch(() => {});
+      }
+    }
+  }, [showCompletion, selectedCategory, groupParam]);
 
   const handlePrevious = () => {
     const currentIndex = groupItems.indexOf(selectedItem);
