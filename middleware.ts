@@ -57,8 +57,9 @@ export async function middleware(request: NextRequest) {
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
 
   // If not authenticated, block protected pages, except during OAuth callback exchange
+  // Redirect to home instead of login for a smoother logout experience
   if ((!isAuthenticated || !isVerified) && isProtected && !isOAuthCallback) {
-    return NextResponse.redirect(new URL('/auth/login', request.url));
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   // If authenticated, block auth pages
