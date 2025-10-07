@@ -14,8 +14,8 @@ import {
   type CategoryKey,
 } from '@/components/lesson';
 import { useLessonLogic } from '@hooks/useLessonLogic';
-import { completeLessonByKey, deriveLessonKey } from '@/utils/learn';
-import { awardProgress } from '@/utils/profile';
+import { completeLessonByKey, deriveLessonKey } from '@/utils/supabase/learn';
+import { awardProgress } from '@/utils/supabase/profile';
 
 function LessonPageContent() {
   const searchParams = useSearchParams();

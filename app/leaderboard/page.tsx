@@ -14,7 +14,7 @@ import {
   fetchTop5Users,
   fetchCurrentUserRank,
   fetchLeaderboardStats,
-} from '@/utils/leaderboard';
+} from '@/utils/supabase/leaderboard';
 import { Spinner } from '@/components/ui/spinner';
 
 export default function LeaderboardPage() {

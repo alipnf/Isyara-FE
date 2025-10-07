@@ -9,7 +9,11 @@ import {
   EditProfileForm,
 } from '@/components/profile';
 import type { UserData } from '@type/profile';
-import { computeXpToNextLevel, getMyUser, updateMyUser } from '@/utils/profile';
+import {
+  computeXpToNextLevel,
+  getMyUser,
+  updateMyUser,
+} from '@/utils/supabase/profile';
 import { useAuthStore } from '@/stores/authStore';
 import { Spinner } from '@/components/ui/spinner';
 

@@ -7,9 +7,9 @@ import {
   getLessonRoute,
 } from '@/components/learn';
 import type { LearningUnit as LearningUnitType } from '@type/learn';
-import { fetchLessonsWithProgress, buildUnits } from '@/utils/learn';
+import { fetchLessonsWithProgress, buildUnits } from '@/utils/supabase/learn';
 import { learningUnits as mockUnits } from '@/components/learn';
-import { getMyUser } from '@/utils/profile';
+import { getMyUser } from '@/utils/supabase/profile';
 import { Spinner } from '@/components/ui/spinner';
 
 export default function LearnPage() {
