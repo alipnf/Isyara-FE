@@ -130,7 +130,11 @@ export function Navbar() {
                     className="flex items-center space-x-2"
                   >
                     <User className="h-4 w-4" />
-                    <span>{user?.user_metadata?.username || user?.email}</span>
+                    <span>
+                      {user?.user_metadata?.username ||
+                        user?.user_metadata?.name ||
+                        user?.email}
+                    </span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
