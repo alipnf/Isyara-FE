@@ -36,17 +36,31 @@ export default function ProfilePage() {
     const xp = dbUser.xp ?? 0;
     const xpToNextLevel = computeXpToNextLevel(level);
 
+    const authMeta = (user?.user_metadata || {}) as any;
+    const email = user?.email || '';
+    const local = email.includes('@') ? email.split('@')[0] : email;
+
+    const name =
+      authMeta.full_name ||
+      authMeta.name ||
+      dbUser.username ||
+      local ||
+      'Pengguna';
+    const username = dbUser.username || local || 'pengguna';
+    const avatar =
+      dbUser.avatar_url || authMeta.avatar_url || authMeta.picture || null;
+
     return {
-      name: dbUser.username || 'Pengguna',
-      username: dbUser.username || 'pengguna',
+      name,
+      username,
       level,
       xp,
       xpToNextLevel,
       totalLessonsCompleted: dbUser.total_lessons_completed ?? 0,
       joinDate: dbUser.created_at,
-      avatar: dbUser.avatar_url,
+      avatar,
     };
-  }, [dbUser]);
+  }, [dbUser, user]);
 
   const [editData, setEditData] = useState({ username: '' });
 
