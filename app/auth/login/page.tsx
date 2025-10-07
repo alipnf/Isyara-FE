@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,7 @@ type LoginInputs = {
 
 function LoginForm() {
   const signIn = useAuthStore((state) => state.signIn);
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -54,6 +56,7 @@ function LoginForm() {
         }
       } else {
         setSuccess(true);
+        router.push('/learn');
       }
     } catch (err) {
       setServerError(

@@ -103,14 +103,6 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
           user: session?.user ?? null,
           loading: false,
         });
-
-        // Handle redirects based on auth state
-        if (event === 'SIGNED_IN' && typeof window !== 'undefined') {
-          // Use router.push instead of window.location for better UX
-          window.location.href = '/learn';
-        } else if (event === 'SIGNED_OUT' && typeof window !== 'undefined') {
-          window.location.href = '/auth/login';
-        }
       });
 
       // Store subscription for cleanup (you might want to handle this differently)
