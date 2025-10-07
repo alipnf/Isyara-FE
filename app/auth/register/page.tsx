@@ -12,7 +12,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useForm } from 'react-hook-form';
 
 type RegisterInputs = {
-  name: string;
+  username: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -34,12 +34,12 @@ function RegisterForm() {
     reValidateMode: 'onChange',
   });
 
-  const onSubmit = handleSubmit(async ({ name, email, password }) => {
+  const onSubmit = handleSubmit(async ({ username, email, password }) => {
     setLoading(true);
     setServerError(null);
     setSuccess(false);
     try {
-      const { error } = await signUp(email, password, name);
+      const { error } = await signUp(email, password, username);
       if (error) {
         const msg = error.message.toLowerCase();
         if (msg.includes('already registered') || msg.includes('duplicate')) {
@@ -76,21 +76,26 @@ function RegisterForm() {
 
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="name">Nama Lengkap</Label>
+          <Label htmlFor="username">Username</Label>
           <Input
-            id="name"
+            id="username"
             type="text"
-            placeholder="Masukkan nama lengkap"
+            placeholder="nama"
             required
             disabled={loading}
-            aria-invalid={!!errors.name}
-            {...register('name', {
-              required: 'Nama wajib diisi',
-              minLength: { value: 2, message: 'Nama minimal 2 karakter' },
+            aria-invalid={!!errors.username}
+            {...register('username', {
+              required: 'Username wajib diisi',
+              minLength: { value: 3, message: 'Minimal 3 karakter' },
+              maxLength: { value: 20, message: 'Maksimal 20 karakter' },
+              pattern: {
+                value: /^[a-zA-Z0-9_]+$/,
+                message: 'Hanya huruf, angka, dan underscore (_)',
+              },
             })}
           />
-          {errors.name && (
-            <p className="text-sm text-red-600">{errors.name.message}</p>
+          {errors.username && (
+            <p className="text-sm text-red-600">{errors.username.message}</p>
           )}
         </div>
 

@@ -17,7 +17,7 @@ interface AuthActions {
   signUp: (
     email: string,
     password: string,
-    name: string
+    username: string
   ) => Promise<{ error: AuthError | null }>;
   signIn: (
     email: string,
@@ -41,13 +41,13 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
   setLoading: (loading) => set({ loading }),
   setInitialized: (initialized) => set({ initialized }),
 
-  signUp: async (email: string, password: string, name: string) => {
+  signUp: async (email: string, password: string, username: string) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
-          full_name: name,
+          username,
         },
       },
     });
