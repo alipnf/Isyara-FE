@@ -27,7 +27,7 @@ export default function LeaderboardList({ users }: LeaderboardListProps) {
                   : ''
               }`}
             >
-              <div className="flex items-center gap-2 sm:gap-4">
+              <div className="flex items-center gap-2 sm:gap-4 min-w-0">
                 <div className="w-6 sm:w-8 flex justify-center">
                   {getRankIcon(user.rank)}
                 </div>
@@ -36,15 +36,17 @@ export default function LeaderboardList({ users }: LeaderboardListProps) {
                     {user.avatar}
                   </span>
                 </div>
-                <div>
-                  <h4 className="font-semibold text-foreground text-sm sm:text-base">
-                    {user.name}
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+                    <span className="font-semibold text-foreground text-sm sm:text-base truncate max-w-[140px] sm:max-w-[220px]">
+                      {user.name}
+                    </span>
                     {user.isCurrentUser && (
-                      <span className="text-primary ml-1 sm:ml-2 text-xs sm:text-sm">
+                      <span className="text-primary text-xs sm:text-sm flex-shrink-0">
                         (Anda)
                       </span>
                     )}
-                  </h4>
+                  </div>
                   <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                     <span>Level {user.level}</span>
                     <span className="hidden sm:inline">

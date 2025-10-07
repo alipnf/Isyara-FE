@@ -22,7 +22,7 @@ export default function TopPodium({ users }: TopPodiumProps) {
                 {user.avatar}
               </span>
             </div>
-            <h3 className="font-bold text-foreground mb-1 text-xs sm:text-sm md:text-base">
+            <h3 className="font-bold text-foreground mb-1 text-xs sm:text-sm md:text-base truncate w-full px-1">
               {user.name}
             </h3>
             <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary mb-1">

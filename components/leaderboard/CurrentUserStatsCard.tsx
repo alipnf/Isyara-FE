@@ -18,8 +18,10 @@ export default function CurrentUserStatsCard({
                 {user.avatar}
               </span>
             </div>
-            <div>
-              <h3 className="font-bold text-foreground text-lg">{user.name}</h3>
+            <div className="min-w-0">
+              <h3 className="font-bold text-foreground text-lg truncate max-w-[200px] sm:max-w-[260px]">
+                {user.name}
+              </h3>
             </div>
           </div>
           <div className="flex items-center gap-4 sm:gap-6 text-center">
