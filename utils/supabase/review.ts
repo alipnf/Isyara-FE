@@ -1,4 +1,5 @@
 import { fetchLessonsWithProgress } from '@/utils/supabase/learn';
+import { supabase } from '@/utils/supabase/client';
 import type { CategoryData, CategoryStatus } from '@type/review';
 
 export type ReviewCategoryKey = 'huruf' | 'angka' | 'kata';
@@ -10,6 +11,26 @@ export type ReviewBuildResult = {
   };
   categoryStatus: Partial<Record<ReviewCategoryKey, CategoryStatus>>;
 };
+
+export async function fetchCategoryProgress(): Promise<
+  Partial<Record<ReviewCategoryKey, { total: number; completed: number; progress: number; unlocked: boolean }>>
+> {
+  const { data, error } = await supabase.rpc('get_category_progress');
+  if (error) throw error;
+  const out: Partial<Record<ReviewCategoryKey, { total: number; completed: number; progress: number; unlocked: boolean }>> = {};
+  for (const row of ((data as any[]) || [])) {
+    const key = (row.category as string) as ReviewCategoryKey;
+    if (key === 'huruf' || key === 'angka' || key === 'kata') {
+      out[key] = {
+        total: Number(row.total ?? 0),
+        completed: Number(row.completed ?? 0),
+        progress: Number(row.progress ?? 0),
+        unlocked: !!row.unlocked,
+      };
+    }
+  }
+  return out;
+}
 
 export async function buildReviewData(): Promise<ReviewBuildResult> {
   const rows = await fetchLessonsWithProgress();
@@ -87,16 +108,24 @@ export async function buildReviewData(): Promise<ReviewBuildResult> {
     if (completed) statusCounters[key].completed += 1;
   }
 
-  const categoryStatus: Partial<Record<ReviewCategoryKey, CategoryStatus>> = {};
-  (Object.keys(categories) as ReviewCategoryKey[]).forEach((k) => {
-    const total = statusCounters[k].total || 0;
-    const completed = statusCounters[k].completed || 0;
-    const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
-    categoryStatus[k] = {
-      unlocked: progress >= 100,
-      progress,
-    } as CategoryStatus;
-  });
+  // Prefer server-side category progress via RPC (gating), fallback to FE calculation
+  let categoryStatus: Partial<Record<ReviewCategoryKey, CategoryStatus>> = {};
+  try {
+    const server = await fetchCategoryProgress();
+    (Object.keys(categories) as ReviewCategoryKey[]).forEach((k) => {
+      const sp = server[k];
+      if (sp) {
+        categoryStatus[k] = { unlocked: sp.unlocked, progress: sp.progress } as CategoryStatus;
+      }
+    });
+  } catch {
+    (Object.keys(categories) as ReviewCategoryKey[]).forEach((k) => {
+      const total = statusCounters[k].total || 0;
+      const completed = statusCounters[k].completed || 0;
+      const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+      categoryStatus[k] = { unlocked: progress >= 100, progress } as CategoryStatus;
+    });
+  }
 
   return { categories, perLessonProgress, categoryStatus };
 }
