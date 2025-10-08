@@ -17,6 +17,7 @@ import { useSearchParams } from 'next/navigation';
 import {
   fetchLessonRewardById,
   completeLessonById,
+  fetchUserLessonCompletedById,
 } from '@/utils/supabase/learn';
 import { awardProgress } from '@/utils/supabase/profile';
 
@@ -25,6 +26,7 @@ function QuizPageContent() {
   const searchParams = useSearchParams();
   const [xpReward, setXpReward] = useState<number | null>(null);
   const completionHandledRef = useRef(false);
+  const [alreadyCompleted, setAlreadyCompleted] = useState<boolean>(false);
 
   const {
     quizState,
@@ -58,9 +60,18 @@ function QuizPageContent() {
     const idParam = searchParams.get('id');
     const id = idParam ? Number(idParam) : NaN;
     if (!isNaN(id)) {
-      fetchLessonRewardById(id)
-        .then((xp) => setXpReward(typeof xp === 'number' ? xp : null))
-        .catch(() => setXpReward(null));
+      Promise.all([
+        fetchLessonRewardById(id).catch(() => null),
+        fetchUserLessonCompletedById(id).catch(() => false),
+      ])
+        .then(([xp, done]) => {
+          setXpReward(typeof xp === 'number' ? xp : null);
+          setAlreadyCompleted(!!done);
+        })
+        .catch(() => {
+          setXpReward(null);
+          setAlreadyCompleted(false);
+        });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -81,16 +92,23 @@ function QuizPageContent() {
     const id = idParam ? Number(idParam) : NaN;
     const xp = typeof xpReward === 'number' ? xpReward : 100;
 
-    if (!isNaN(id)) {
+    if (!isNaN(id) && !alreadyCompleted) {
       completeLessonById(id).catch(() => {
         // Fallback: still award XP to avoid losing progress feeling
         awardProgress({ xpDelta: xp, lessonsDelta: 1 }).catch(() => {});
       });
-    } else {
+    } else if (!alreadyCompleted) {
       // No lesson id: fallback local award so user still sees progress
       awardProgress({ xpDelta: xp, lessonsDelta: 1 }).catch(() => {});
     }
-  }, [quizState, questions.length, correctAnswers, searchParams, xpReward]);
+  }, [
+    quizState,
+    questions.length,
+    correctAnswers,
+    searchParams,
+    xpReward,
+    alreadyCompleted,
+  ]);
 
   return (
     <>
@@ -169,7 +187,7 @@ function QuizPageContent() {
         <QuizCompletedCard
           questions={questions}
           onReset={resetQuiz}
-          xpReward={xpReward}
+          xpReward={alreadyCompleted ? 0 : xpReward}
         />
       )}
     </>

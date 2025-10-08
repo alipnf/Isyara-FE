@@ -18,6 +18,7 @@ import {
   completeLessonByKey,
   deriveLessonKey,
   fetchLessonRewardByKey,
+  fetchUserLessonCompletedByKey,
 } from '@/utils/supabase/learn';
 import { awardProgress } from '@/utils/supabase/profile';
 
@@ -50,6 +51,7 @@ function LessonPageContent() {
   } = useLessonLogic(selectedCategory, groupParam);
 
   const [xpReward, setXpReward] = useState<number | null>(null);
+  const [alreadyCompleted, setAlreadyCompleted] = useState<boolean>(false);
 
   const progressValue = useMemo(() => {
     return groupItems.length
@@ -62,11 +64,21 @@ function LessonPageContent() {
     const key = deriveLessonKey(selectedCategory, groupParam || '');
     if (!key) {
       setXpReward(null);
+      setAlreadyCompleted(false);
       return;
     }
-    fetchLessonRewardByKey(key)
-      .then((xp) => setXpReward(typeof xp === 'number' ? xp : null))
-      .catch(() => setXpReward(null));
+    Promise.all([
+      fetchLessonRewardByKey(key).catch(() => null),
+      fetchUserLessonCompletedByKey(key).catch(() => false),
+    ])
+      .then(([xp, done]) => {
+        setXpReward(typeof xp === 'number' ? xp : null);
+        setAlreadyCompleted(!!done);
+      })
+      .catch(() => {
+        setXpReward(null);
+        setAlreadyCompleted(false);
+      });
   }, [selectedCategory, groupParam]);
 
   // Award XP and mark lesson completion once per session when all items done
@@ -76,7 +88,7 @@ function LessonPageContent() {
       prevCompletionRef.current = true;
       // Try to persist completion per-user in DB via RPC
       const key = deriveLessonKey(selectedCategory, groupParam || '');
-      if (key) {
+      if (key && !alreadyCompleted) {
         completeLessonByKey(key).catch(() => {
           // Fallback: still award XP to avoid losing progress feeling
           const xp = typeof xpReward === 'number' ? xpReward : 50;
@@ -84,11 +96,19 @@ function LessonPageContent() {
         });
       } else {
         // No key derivable (e.g., words category not seeded yet): fallback award
-        const xp = typeof xpReward === 'number' ? xpReward : 50;
-        awardProgress({ xpDelta: xp, lessonsDelta: 1 }).catch(() => {});
+        if (!alreadyCompleted) {
+          const xp = typeof xpReward === 'number' ? xpReward : 50;
+          awardProgress({ xpDelta: xp, lessonsDelta: 1 }).catch(() => {});
+        }
       }
     }
-  }, [showCompletion, selectedCategory, groupParam, xpReward]);
+  }, [
+    showCompletion,
+    selectedCategory,
+    groupParam,
+    xpReward,
+    alreadyCompleted,
+  ]);
 
   const handlePrevious = () => {
     const currentIndex = groupItems.indexOf(selectedItem);
@@ -160,7 +180,7 @@ function LessonPageContent() {
       <CompletionDialog
         open={showCompletion}
         categoryName={selectedCategory}
-        xpReward={xpReward}
+        xpReward={alreadyCompleted ? 0 : xpReward}
       />
     </div>
   );

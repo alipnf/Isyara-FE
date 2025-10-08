@@ -33,6 +33,8 @@ export function QuizCompletedCard({
           questions.reduce((sum, q) => sum + q.timeSpent, 0) / questions.length
         )
       : 0;
+  const passed = accuracy >= 70;
+  const hasReward = typeof xpReward === 'number' && xpReward > 0;
 
   return (
     <div className="h-screen flex items-center justify-center p-4 overflow-hidden">
@@ -82,23 +84,33 @@ export function QuizCompletedCard({
               </div>
             </div>
 
-            {/* Reward XP (shown when passed) */}
-            {accuracy >= 70 && (
-              <div className="bg-gradient-to-br from-yellow-50 to-amber-50 border border-yellow-200 p-4 rounded-lg text-center">
-                <div className="relative inline-block">
-                  <Award
-                    className="h-12 w-12 text-yellow-500 mx-auto mb-2 fill-yellow-400 stroke-yellow-600 drop-shadow-lg"
-                    strokeWidth={2}
-                  />
+            {/* Reward / Retry info */}
+            {passed &&
+              (hasReward ? (
+                <div className="bg-gradient-to-br from-yellow-50 to-amber-50 border border-yellow-200 p-4 rounded-lg text-center">
+                  <div className="relative inline-block">
+                    <Award
+                      className="h-12 w-12 text-yellow-500 mx-auto mb-2 fill-yellow-400 stroke-yellow-600 drop-shadow-lg"
+                      strokeWidth={2}
+                    />
+                  </div>
+                  <p className="font-bold text-lg text-yellow-700 mb-0.5">
+                    +{xpReward} XP Diperoleh
+                  </p>
+                  <p className="text-xs text-yellow-600/80 font-medium">
+                    Mantap! Pertahankan performa belajarmu
+                  </p>
                 </div>
-                <p className="font-bold text-lg text-yellow-700 mb-0.5">
-                  +{typeof xpReward === 'number' ? xpReward : 50} XP Diperoleh
-                </p>
-                <p className="text-xs text-yellow-600/80 font-medium">
-                  Mantap! Pertahankan performa belajarmu
-                </p>
-              </div>
-            )}
+              ) : (
+                <div className="bg-muted/40 border border-muted p-4 rounded-lg text-center">
+                  <p className="font-semibold text-foreground mb-0.5">
+                    Latihan Ulang
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Kuis ini sudah pernah selesai. Tidak ada XP tambahan.
+                  </p>
+                </div>
+              ))}
 
             {/* Detailed Results */}
             <div className="bg-muted/30 rounded-lg p-3">

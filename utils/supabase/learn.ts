@@ -213,3 +213,41 @@ export async function completeLessonById(id: number) {
   });
   if (rpcErr) throw rpcErr;
 }
+
+// Check if current user already completed a lesson by its key
+export async function fetchUserLessonCompletedByKey(
+  key: string
+): Promise<boolean> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+  const { data, error } = await supabase
+    .from('lesson_defs')
+    .select('id, user_lessons!left(user_id,status,progress,completed_at)')
+    .eq('key', key)
+    .eq('user_lessons.user_id', user.id)
+    .single();
+  if (error) throw error;
+  const status = (data as any)?.user_lessons?.[0]?.status ?? 'in_progress';
+  return status === 'completed';
+}
+
+// Check if current user already completed a lesson by its id
+export async function fetchUserLessonCompletedById(
+  id: number
+): Promise<boolean> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+  const { data, error } = await supabase
+    .from('lesson_defs')
+    .select('id, user_lessons!left(user_id,status,progress,completed_at)')
+    .eq('id', id)
+    .eq('user_lessons.user_id', user.id)
+    .single();
+  if (error) throw error;
+  const status = (data as any)?.user_lessons?.[0]?.status ?? 'in_progress';
+  return status === 'completed';
+}
