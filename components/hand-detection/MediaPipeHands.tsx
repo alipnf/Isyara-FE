@@ -45,9 +45,9 @@ export function useMediaPipeHands(): MutableRefObject<any> {
       hands.setOptions({
         selfieMode: true,
         maxNumHands: 2,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5,
+        modelComplexity: 1, // increase to 2 if device performance allows for more stability
+        minDetectionConfidence: 0.6,
+        minTrackingConfidence: 0.7,
       });
 
       handsRef.current = hands;
@@ -141,4 +141,3 @@ export function drawLandmarks(
     }
   }
 }
-

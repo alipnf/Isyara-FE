@@ -36,6 +36,10 @@ export function HandDetection({
   holdDuration = 3, // Default 3 seconds
   expectedLabel = '', // Expected label (e.g. the letter being practiced)
 }: HandDetectionProps) {
+  // Temporary toggle to disable per-letter hand-count requirements
+  const DISABLE_HAND_REQUIREMENTS = true;
+  // Smoothing and hysteresis settings
+  const SMOOTH_ALPHA = 0.8; // 0..1, higher = smoother (slower to react)
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -63,6 +67,8 @@ export function HandDetection({
   const onDetectionRef = useRef<typeof onDetection>(onDetection);
   const onLiveUpdateRef = useRef<typeof onLiveUpdate>(onLiveUpdate);
   const [handReqMessage, setHandReqMessage] = useState<string | null>(null);
+  // Exponential moving average for expected-label confidence
+  const emaConfRef = useRef<number>(0);
 
   // References for hold timer
   const detectionTimerRef = useRef<{
@@ -350,7 +356,7 @@ export function HandDetection({
             // Validate hand count vs requirement for expected label
             let isHandCountValid = true;
             let validationMsg: string | null = null;
-            if (currentExpected) {
+            if (!DISABLE_HAND_REQUIREMENTS && currentExpected) {
               const detectedCount = Math.min(
                 2,
                 results.multiHandLandmarks.length
@@ -370,7 +376,7 @@ export function HandDetection({
                 validationMsg = null;
               }
             }
-            setHandReqMessage(validationMsg);
+            setHandReqMessage(DISABLE_HAND_REQUIREMENTS ? null : validationMsg);
 
             // Always show the best current label (even if below threshold)
             if (bestLabelAny) {
@@ -378,10 +384,16 @@ export function HandDetection({
             } else {
               setCurrentDetectedLabel(null);
             }
-            // Emit live update using expected label confidence percent (0-100)
+            // Exponential moving average smoothing for expected label confidence
+            const rawExpected = Math.max(0, Math.min(1, expectedConf));
+            const prev = emaConfRef.current || 0;
+            const smoothed = prev === 0 ? rawExpected : prev * SMOOTH_ALPHA + rawExpected * (1 - SMOOTH_ALPHA);
+            emaConfRef.current = smoothed;
+
+            // Emit live update using smoothed expected confidence percent (0-100)
             onLiveUpdateRef.current?.(
               bestLabelAny || null,
-              Math.round(Math.max(0, Math.min(1, expectedConf)) * 100)
+              Math.round(smoothed * 100)
             );
 
             // Handle the hold duration timer - only start timer if the detected label matches expected label and hand count is valid
@@ -389,25 +401,17 @@ export function HandDetection({
             const isCorrectGesture =
               !!currentExpected && bestLabel === currentExpected;
 
-            // If we have a valid detection and it matches the expected label
-            if (
-              bestConf >= confidenceThreshold &&
-              isCorrectGesture &&
-              isHandCountValid
-            ) {
-              // Show hold alert when correct gesture is detected
-              setShowHoldAlert(true);
+            // Hysteresis thresholds: start higher, keep with slightly lower
+            const startThreshold = confidenceThreshold; // e.g., 0.75
+            const keepThreshold = Math.max(0.5, startThreshold - 0.1); // e.g., 0.65
 
-              // If there's no current timer or the label changed, start a new timer
-              if (
-                !detectionTimerRef.current ||
-                detectionTimerRef.current.label !== bestLabel
-              ) {
-                // Clear any existing timer
-                if (detectionTimerRef.current?.timerId) {
-                  clearTimeout(detectionTimerRef.current.timerId);
-                }
+            const canStart =
+              isCorrectGesture && isHandCountValid && emaConfRef.current >= startThreshold;
+            const canKeep = isHandCountValid && emaConfRef.current >= keepThreshold;
 
+            if (!detectionTimerRef.current) {
+              if (canStart) {
+                setShowHoldAlert(true);
                 // Start a new timer
                 const timerId = setTimeout(() => {
                   if (onDetectionRef.current && detectionTimerRef.current) {
@@ -420,18 +424,24 @@ export function HandDetection({
                   setShowHoldAlert(false);
                 }, holdDuration * 1000);
 
-                // Store the new timer details
                 detectionTimerRef.current = {
-                  label: bestLabel,
-                  confidence: bestConf * 100,
+                  // Tie the timer to the expected label for stability
+                  label: currentExpected,
+                  confidence: Math.round(emaConfRef.current * 100),
                   startTime: now,
                   timerId,
                 };
+              } else {
+                setShowHoldAlert(false);
               }
             } else {
-              // No valid detection or doesn't match expected label, clear timer
-              if (detectionTimerRef.current?.timerId) {
-                clearTimeout(detectionTimerRef.current.timerId);
+              // Timer is running; keep it as long as confidence stays above keepThreshold
+              if (canKeep) {
+                setShowHoldAlert(true);
+              } else {
+                if (detectionTimerRef.current?.timerId) {
+                  clearTimeout(detectionTimerRef.current.timerId);
+                }
                 detectionTimerRef.current = null;
                 setShowHoldAlert(false);
               }
