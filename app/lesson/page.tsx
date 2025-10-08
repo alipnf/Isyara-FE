@@ -14,7 +14,11 @@ import {
   type CategoryKey,
 } from '@/components/lesson';
 import { useLessonLogic } from '@hooks/useLessonLogic';
-import { completeLessonByKey, deriveLessonKey } from '@/utils/supabase/learn';
+import {
+  completeLessonByKey,
+  deriveLessonKey,
+  fetchLessonRewardByKey,
+} from '@/utils/supabase/learn';
 import { awardProgress } from '@/utils/supabase/profile';
 
 function LessonPageContent() {
@@ -45,11 +49,25 @@ function LessonPageContent() {
     handleItemSelect,
   } = useLessonLogic(selectedCategory, groupParam);
 
+  const [xpReward, setXpReward] = useState<number | null>(null);
+
   const progressValue = useMemo(() => {
     return groupItems.length
       ? (completedItems.size / groupItems.length) * 100
       : 0;
   }, [groupItems.length, completedItems.size]);
+
+  // Fetch XP reward dynamically from lesson_defs via derived key
+  useEffect(() => {
+    const key = deriveLessonKey(selectedCategory, groupParam || '');
+    if (!key) {
+      setXpReward(null);
+      return;
+    }
+    fetchLessonRewardByKey(key)
+      .then((xp) => setXpReward(typeof xp === 'number' ? xp : null))
+      .catch(() => setXpReward(null));
+  }, [selectedCategory, groupParam]);
 
   // Award XP and mark lesson completion once per session when all items done
   const prevCompletionRef = useRef(false);
@@ -61,14 +79,16 @@ function LessonPageContent() {
       if (key) {
         completeLessonByKey(key).catch(() => {
           // Fallback: still award XP to avoid losing progress feeling
-          awardProgress({ xpDelta: 50, lessonsDelta: 1 }).catch(() => {});
+          const xp = typeof xpReward === 'number' ? xpReward : 50;
+          awardProgress({ xpDelta: xp, lessonsDelta: 1 }).catch(() => {});
         });
       } else {
         // No key derivable (e.g., words category not seeded yet): fallback award
-        awardProgress({ xpDelta: 50, lessonsDelta: 1 }).catch(() => {});
+        const xp = typeof xpReward === 'number' ? xpReward : 50;
+        awardProgress({ xpDelta: xp, lessonsDelta: 1 }).catch(() => {});
       }
     }
-  }, [showCompletion, selectedCategory, groupParam]);
+  }, [showCompletion, selectedCategory, groupParam, xpReward]);
 
   const handlePrevious = () => {
     const currentIndex = groupItems.indexOf(selectedItem);
@@ -137,7 +157,11 @@ function LessonPageContent() {
         </div>
       </div>
 
-      <CompletionDialog open={showCompletion} categoryName={selectedCategory} />
+      <CompletionDialog
+        open={showCompletion}
+        categoryName={selectedCategory}
+        xpReward={xpReward}
+      />
     </div>
   );
 }

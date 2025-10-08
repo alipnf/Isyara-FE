@@ -185,6 +185,19 @@ export async function fetchLessonRewardById(
   return (data as any)?.xp_reward ?? null;
 }
 
+// Fetch xp reward by lesson key (e.g., 'huruf_k_o')
+export async function fetchLessonRewardByKey(
+  key: string
+): Promise<number | null> {
+  const { data, error } = await supabase
+    .from('lesson_defs')
+    .select('xp_reward')
+    .eq('key', key)
+    .single();
+  if (error) throw error;
+  return (data as any)?.xp_reward ?? null;
+}
+
 // Complete a lesson/quiz by its numeric id (lookup key then call RPC)
 export async function completeLessonById(id: number) {
   const { data, error } = await supabase

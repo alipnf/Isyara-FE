@@ -12,11 +12,13 @@ import { Award } from 'lucide-react';
 interface CompletionDialogProps {
   open: boolean;
   categoryName: string;
+  xpReward?: number | null;
 }
 
 export function CompletionDialog({
   open,
   categoryName,
+  xpReward,
 }: CompletionDialogProps) {
   return (
     <Dialog open={open} onOpenChange={() => {}}>
@@ -39,7 +41,7 @@ export function CompletionDialog({
               />
             </div>
             <p className="font-bold text-xl text-yellow-700 mb-1">
-              +50 XP Diperoleh
+              +{typeof xpReward === 'number' ? xpReward : 50} XP Diperoleh
             </p>
             <p className="text-sm text-yellow-600/80 font-medium">
               Lanjutkan ke level berikutnya
@@ -55,4 +57,3 @@ export function CompletionDialog({
     </Dialog>
   );
 }
-
