@@ -4,9 +4,9 @@ import type {
   CategoryType,
   ReviewItem,
   CategoryStatus,
-  LessonKey,
+  CategoryData,
 } from '@type/review';
-import { categories, userProgress } from '@components/review/reviewData';
+import { buildReviewData } from '@/utils/supabase/review';
 
 export function useReviewLogic(initialCategory: CategoryType) {
   const [reviewState, setReviewState] = useState<ReviewState>('category');
@@ -20,58 +20,45 @@ export function useReviewLogic(initialCategory: CategoryType) {
   const [showLocked, setShowLocked] = useState(false);
   const [currentConfidence, setCurrentConfidence] = useState(0);
   const [showHint, setShowHint] = useState(false);
-  const [categoryStatus, setCategoryStatus] = useState<{
-    [key in CategoryType]: CategoryStatus;
-  }>({
-    huruf: { unlocked: false, progress: 0 },
-    angka: { unlocked: false, progress: 0 },
-    kata: { unlocked: false, progress: 0 },
-  });
+  const [categories, setCategories] = useState<
+    Partial<Record<CategoryType, CategoryData>>
+  >({});
+  const [categoryStatus, setCategoryStatus] = useState<
+    Partial<Record<CategoryType, CategoryStatus>>
+  >({});
+  const [perLessonProgress, setPerLessonProgress] = useState<{
+    lessons: Record<string, { completed: boolean; progress: number }>;
+  }>({ lessons: {} });
 
   useEffect(() => {
-    const newStatus = { ...categoryStatus };
-    const hurufLessons = categories.huruf.requiredLessons as LessonKey[];
-    const hurufProgress = hurufLessons.map(
-      (lesson) => userProgress.lessons[lesson].progress
-    );
-    const hurufAvgProgress =
-      hurufProgress.reduce((acc, val) => acc + val, 0) / hurufProgress.length;
-    newStatus.huruf = {
-      unlocked: hurufAvgProgress >= 50,
-      progress: hurufAvgProgress,
+    let mounted = true;
+    async function load() {
+      try {
+        const res = await buildReviewData();
+        if (!mounted) return;
+        setCategories(
+          res.categories as Partial<Record<CategoryType, CategoryData>>
+        );
+        setCategoryStatus(
+          res.categoryStatus as Partial<Record<CategoryType, CategoryStatus>>
+        );
+        setPerLessonProgress(res.perLessonProgress);
+      } catch (e) {
+        if (!mounted) return;
+        setCategories({});
+        setCategoryStatus({});
+        setPerLessonProgress({ lessons: {} });
+      }
+    }
+    load();
+    return () => {
+      mounted = false;
     };
-
-    const angkaLessons = categories.angka.requiredLessons as LessonKey[];
-    const angkaProgress = angkaLessons.map(
-      (lesson) => userProgress.lessons[lesson].progress
-    );
-    const angkaAvgProgress =
-      angkaProgress.reduce((acc, val) => acc + val, 0) / angkaProgress.length;
-    newStatus.angka = {
-      unlocked: angkaAvgProgress >= 50,
-      progress: angkaAvgProgress,
-    };
-
-    const kataLessons = categories.kata.requiredLessons as LessonKey[];
-    const kataProgress = kataLessons.map(
-      (lesson) => userProgress.lessons[lesson].progress
-    );
-    const kataAvgProgress =
-      kataProgress.reduce((acc, val) => acc + val, 0) / kataProgress.length;
-    newStatus.kata = {
-      unlocked: kataAvgProgress >= 50,
-      progress: kataAvgProgress,
-    };
-
-    setCategoryStatus(newStatus);
   }, []);
 
   const selectCategory = (category: CategoryType) => {
     setSelectedCategory(category);
-    if (categoryStatus[category].unlocked) {
-      setReviewState('setup');
-      setShowLocked(false);
-    } else if (category === 'huruf') {
+    if (categoryStatus[category]?.unlocked) {
       setReviewState('setup');
       setShowLocked(false);
     } else {
@@ -80,7 +67,7 @@ export function useReviewLogic(initialCategory: CategoryType) {
   };
 
   const generateReviewItems = () => {
-    const items = categories[selectedCategory].items;
+    const items = categories[selectedCategory]?.items || [];
     const shuffled = [...items].sort(() => Math.random() - 0.5);
     const selected = shuffled.slice(0, Math.min(10, items.length));
     const newItems = selected.map((item) => ({
@@ -195,7 +182,7 @@ export function useReviewLogic(initialCategory: CategoryType) {
     showLocked,
     currentConfidence,
     showHint,
-    categoryStatus,
+    categoryStatus: categoryStatus as { [key in CategoryType]: CategoryStatus },
     rememberedCount,
     accuracy,
     selectCategory,
@@ -209,5 +196,7 @@ export function useReviewLogic(initialCategory: CategoryType) {
     toggleHint,
     setReviewState,
     setShowLocked,
+    categories: categories as Partial<Record<CategoryType, CategoryData>>,
+    perLessonProgress,
   };
 }

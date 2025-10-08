@@ -10,8 +10,6 @@ import {
   ReviewCameraSection,
   ReviewHintSection,
   ReviewCompletedCard,
-  categories,
-  userProgress,
   CategoryType,
 } from '@/components/review';
 import { useReviewLogic } from '@hooks/useReviewLogic';
@@ -51,6 +49,8 @@ function ReviewPageContent() {
     toggleHint,
     setReviewState,
     setShowLocked,
+    categories,
+    perLessonProgress,
   } = useReviewLogic(initialCategory);
 
   return (
@@ -67,11 +67,10 @@ function ReviewPageContent() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
-              {Object.entries(categories).map(([key, category]) => {
+              {Object.entries(categories || {}).map(([key, category]) => {
                 const typedKey = key as CategoryType;
-                const isUnlocked =
-                  categoryStatus[typedKey].unlocked || key === 'huruf';
-                const progress = categoryStatus[typedKey].progress;
+                const isUnlocked = !!categoryStatus[typedKey]?.unlocked;
+                const progress = categoryStatus[typedKey]?.progress ?? 0;
 
                 return (
                   <CategorySelectionCard
@@ -89,19 +88,19 @@ function ReviewPageContent() {
         )}
 
         {/* Locked Category State */}
-        {showLocked && (
+        {showLocked && categories[selectedCategory] ? (
           <LockedCategoryCard
-            category={categories[selectedCategory]}
+            category={categories[selectedCategory]!}
             categoryName={selectedCategory}
-            userProgress={userProgress}
+            userProgress={perLessonProgress as any}
             onBack={() => setShowLocked(false)}
           />
-        )}
+        ) : null}
 
         {/* Setup State */}
         {reviewState === 'setup' && (
           <ReviewSetupCard
-            category={categories[selectedCategory]}
+            category={categories[selectedCategory]!}
             cameraEnabled={cameraEnabled}
             onToggleCamera={toggleCamera}
             onStart={startReview}
@@ -113,15 +112,15 @@ function ReviewPageContent() {
         {/* Active Review State */}
         {reviewState === 'active' && (
           <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
-            <ReviewProgressHeader
-              currentItem={reviewItems[currentItemIndex]?.item}
-              currentIndex={currentItemIndex}
-              totalItems={reviewItems.length}
-              rememberedCount={rememberedCount}
-              showHint={showHint}
-              categoryName={categories[selectedCategory].name}
-              onToggleHint={toggleHint}
-            />
+              <ReviewProgressHeader
+                currentItem={reviewItems[currentItemIndex]?.item}
+                currentIndex={currentItemIndex}
+                totalItems={reviewItems.length}
+                rememberedCount={rememberedCount}
+                showHint={showHint}
+                categoryName={categories[selectedCategory]?.name || selectedCategory}
+                onToggleHint={toggleHint}
+              />
 
             <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
               <ReviewCameraSection

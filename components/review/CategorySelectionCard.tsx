@@ -63,9 +63,9 @@ export function CategorySelectionCard({
           {categoryKey === 'kata' && 'Kata-kata dasar'}
         </p>
 
-        {!isUnlocked && categoryKey !== 'huruf' && (
+        {!isUnlocked && (
           <div className="flex items-center justify-center gap-1 mt-2 text-xs text-red-500">
-            <span>Pelajari lebih banyak materi terlebih dahulu</span>
+            <span>Selesaikan 100% materi untuk membuka</span>
           </div>
         )}
       </CardContent>

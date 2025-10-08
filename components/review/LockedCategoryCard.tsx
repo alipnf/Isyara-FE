@@ -32,7 +32,7 @@ export function LockedCategoryCard({
           </div>
           <CardTitle className="text-2xl">Belum Tersedia</CardTitle>
           <CardDescription>
-            Pelajari lebih banyak materi {categoryName} terlebih dahulu untuk
+            Selesaikan 100% materi {categoryName} terlebih dahulu untuk
             mengakses mode ini.
           </CardDescription>
         </CardHeader>
@@ -42,11 +42,12 @@ export function LockedCategoryCard({
               <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
               <div>
                 <h4 className="font-medium text-yellow-800">
-                  Pembelajaran Tambahan Diperlukan
+                  Syarat Akses Review
                 </h4>
                 <p className="text-sm text-yellow-700 mt-1">
-                  {category.name} akan terbuka setelah Anda mempelajari
-                  setidaknya 50% dari materi {category.name}.
+                  Mode review akan terbuka setelah seluruh pelajaran{' '}
+                  {category.name}
+                  selesai (100%).
                 </p>
               </div>
             </div>
@@ -59,7 +60,7 @@ export function LockedCategoryCard({
                 const typedLesson = lesson as LessonKey;
                 const lessonProgress =
                   userProgress.lessons[typedLesson].progress;
-                const isCompleted = lessonProgress >= 50;
+                const isCompleted = lessonProgress >= 100;
 
                 return (
                   <div

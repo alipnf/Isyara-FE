@@ -1,15 +1,7 @@
 export type ReviewState = 'category' | 'setup' | 'active' | 'completed';
 export type CategoryType = 'huruf' | 'angka' | 'kata';
-export type LessonKey =
-  | 'Huruf A-E'
-  | 'Huruf F-J'
-  | 'Huruf K-O'
-  | 'Huruf P-T'
-  | 'Huruf U-Z'
-  | 'Angka 0-4'
-  | 'Angka 5-9'
-  | 'Sapaan & Salam'
-  | 'Kata Ganti';
+// Dynamic lesson key: use lesson title from DB
+export type LessonKey = string;
 
 export interface ReviewItem {
   item: string;
