@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useMemo } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -13,9 +13,18 @@ import {
   QuizCompletedCard,
 } from '@/components/quiz';
 import { useQuizLogic } from '@hooks/useQuizLogic';
+import { useSearchParams } from 'next/navigation';
+import {
+  fetchLessonRewardById,
+  completeLessonById,
+} from '@/utils/supabase/learn';
+import { awardProgress } from '@/utils/supabase/profile';
 
 function QuizPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [xpReward, setXpReward] = useState<number | null>(null);
+  const completionHandledRef = useRef(false);
 
   const {
     quizState,
@@ -43,6 +52,45 @@ function QuizPageContent() {
   const progressValue = useMemo(() => {
     return questions.length ? (answeredQuestions / questions.length) * 100 : 0;
   }, [answeredQuestions, questions.length]);
+
+  // Fetch dynamic XP reward from Supabase when opened from /learn with lesson id
+  useEffect(() => {
+    const idParam = searchParams.get('id');
+    const id = idParam ? Number(idParam) : NaN;
+    if (!isNaN(id)) {
+      fetchLessonRewardById(id)
+        .then((xp) => setXpReward(typeof xp === 'number' ? xp : null))
+        .catch(() => setXpReward(null));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // On quiz completed (and passed), mark as completed in DB to unlock next
+  useEffect(() => {
+    if (quizState !== 'completed' || completionHandledRef.current) return;
+
+    const total = questions.length;
+    const accuracy = total > 0 ? Math.round((correctAnswers / total) * 100) : 0;
+    const passed = accuracy >= 70; // unlock/award only on pass
+
+    if (!passed) return;
+
+    completionHandledRef.current = true;
+
+    const idParam = searchParams.get('id');
+    const id = idParam ? Number(idParam) : NaN;
+    const xp = typeof xpReward === 'number' ? xpReward : 100;
+
+    if (!isNaN(id)) {
+      completeLessonById(id).catch(() => {
+        // Fallback: still award XP to avoid losing progress feeling
+        awardProgress({ xpDelta: xp, lessonsDelta: 1 }).catch(() => {});
+      });
+    } else {
+      // No lesson id: fallback local award so user still sees progress
+      awardProgress({ xpDelta: xp, lessonsDelta: 1 }).catch(() => {});
+    }
+  }, [quizState, questions.length, correctAnswers, searchParams, xpReward]);
 
   return (
     <>
@@ -118,7 +166,11 @@ function QuizPageContent() {
       )}
 
       {quizState === 'completed' && (
-        <QuizCompletedCard questions={questions} onReset={resetQuiz} />
+        <QuizCompletedCard
+          questions={questions}
+          onReset={resetQuiz}
+          xpReward={xpReward}
+        />
       )}
     </>
   );

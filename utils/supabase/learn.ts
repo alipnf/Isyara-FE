@@ -171,3 +171,32 @@ export async function completeLessonByKey(key: string) {
   });
   if (error) throw error;
 }
+
+// Fetch xp reward for a lesson/quiz by its id
+export async function fetchLessonRewardById(
+  id: number
+): Promise<number | null> {
+  const { data, error } = await supabase
+    .from('lesson_defs')
+    .select('xp_reward')
+    .eq('id', id)
+    .single();
+  if (error) throw error;
+  return (data as any)?.xp_reward ?? null;
+}
+
+// Complete a lesson/quiz by its numeric id (lookup key then call RPC)
+export async function completeLessonById(id: number) {
+  const { data, error } = await supabase
+    .from('lesson_defs')
+    .select('key')
+    .eq('id', id)
+    .single();
+  if (error) throw error;
+  const key = (data as any)?.key as string | undefined;
+  if (!key) throw new Error('Lesson key not found');
+  const { error: rpcErr } = await supabase.rpc('complete_lesson', {
+    p_lesson_key: key,
+  });
+  if (rpcErr) throw rpcErr;
+}

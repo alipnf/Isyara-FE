@@ -8,17 +8,19 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Trophy, Target, RotateCcw, TrendingUp } from 'lucide-react';
+import { Trophy, Target, RotateCcw, TrendingUp, Award } from 'lucide-react';
 import type { QuizQuestion } from '@type/quiz';
 
 interface QuizCompletedCardProps {
   questions: QuizQuestion[];
   onReset: () => void;
+  xpReward?: number | null;
 }
 
 export function QuizCompletedCard({
   questions,
   onReset,
+  xpReward,
 }: QuizCompletedCardProps) {
   const correctAnswers = questions.filter((q) => q.correct).length;
   const accuracy =
@@ -79,6 +81,24 @@ export function QuizCompletedCard({
                 <div className="text-xs text-muted-foreground">Rata-rata</div>
               </div>
             </div>
+
+            {/* Reward XP (shown when passed) */}
+            {accuracy >= 70 && (
+              <div className="bg-gradient-to-br from-yellow-50 to-amber-50 border border-yellow-200 p-4 rounded-lg text-center">
+                <div className="relative inline-block">
+                  <Award
+                    className="h-12 w-12 text-yellow-500 mx-auto mb-2 fill-yellow-400 stroke-yellow-600 drop-shadow-lg"
+                    strokeWidth={2}
+                  />
+                </div>
+                <p className="font-bold text-lg text-yellow-700 mb-0.5">
+                  +{typeof xpReward === 'number' ? xpReward : 50} XP Diperoleh
+                </p>
+                <p className="text-xs text-yellow-600/80 font-medium">
+                  Mantap! Pertahankan performa belajarmu
+                </p>
+              </div>
+            )}
 
             {/* Detailed Results */}
             <div className="bg-muted/30 rounded-lg p-3">
