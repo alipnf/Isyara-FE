@@ -203,10 +203,19 @@ export function Navbar() {
                       );
                     })}
 
-                    {/* Mobile Sign Out */}
+                    {/* Mobile Profile + Sign Out */}
                     {isAuthenticated && (
                       <>
                         <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link
+                            href="/profile"
+                            className="w-full flex items-center space-x-2"
+                          >
+                            <User className="h-4 w-4" />
+                            <span>Profil</span>
+                          </Link>
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                           className="flex items-center space-x-2"
                           onSelect={(e) => {
