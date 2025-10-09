@@ -78,28 +78,6 @@ export function HandDetection({
     timerId: NodeJS.Timeout | null;
   } | null>(null);
 
-  // Add helper function for drawing rounded rectangles
-  const drawRoundedRect = (
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    radius: number
-  ) => {
-    ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
-    ctx.closePath();
-  };
-
   // Clean up resources when component unmounts
   useEffect(() => {
     return () => {
@@ -243,12 +221,14 @@ export function HandDetection({
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      // Set initial size
+      // Set initial size based on container's actual box (fill parent)
       const resize = () => {
         if (!containerRef.current || !canvas) return;
         const rect = containerRef.current.getBoundingClientRect();
-        canvas.width = Math.max(1, Math.floor(rect.width));
-        if (!canvas.height) canvas.height = Math.floor(rect.width * 0.75);
+        const cssW = Math.max(1, Math.floor(rect.width));
+        const cssH = Math.max(1, Math.floor(rect.height));
+        canvas.width = cssW;
+        canvas.height = cssH;
       };
       resize();
 
@@ -256,13 +236,13 @@ export function HandDetection({
       handsRef.current.onResults((results: any) => {
         if (!ctx || !canvas || !containerRef.current) return;
 
-        // Adapt canvas size to source aspect ratio
+        // Adapt canvas size to container size (respect parent layout)
         const img = results.image;
         const rect = containerRef.current.getBoundingClientRect();
         const cssW = Math.max(1, Math.floor(rect.width));
+        const cssH = Math.max(1, Math.floor(rect.height));
         const srcW = (img && img.width) || video.videoWidth || width;
         const srcH = (img && img.height) || video.videoHeight || height;
-        const cssH = Math.max(1, Math.floor(cssW * (srcH / srcW)));
 
         const last = lastDimsRef.current;
         if (
@@ -273,7 +253,6 @@ export function HandDetection({
         ) {
           canvas.width = cssW;
           canvas.height = cssH;
-          containerRef.current.style.height = `${cssH}px`;
           lastDimsRef.current = {
             width: cssW,
             height: cssH,
@@ -285,12 +264,34 @@ export function HandDetection({
         ctx.save();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw video frame with mirror effect
+        // Draw video frame with mirror effect, preserving aspect ratio (contain)
         try {
+          const dstW = canvas.width;
+          const dstH = canvas.height;
+          const srcW2 = srcW;
+          const srcH2 = srcH;
+          const dstAR = dstW / dstH;
+          const srcAR = srcW2 / srcH2;
+
+          let drawW = dstW;
+          let drawH = dstH;
+          if (srcAR > dstAR) {
+            // source is wider -> fit width
+            drawW = dstW;
+            drawH = Math.max(1, Math.floor(dstW / srcAR));
+          } else {
+            // source is taller/narrower -> fit height
+            drawH = dstH;
+            drawW = Math.max(1, Math.floor(dstH * srcAR));
+          }
+          const dx = Math.floor((dstW - drawW) / 2);
+          const dy = Math.floor((dstH - drawH) / 2);
+
+          // Mirror horizontally then draw inside letterboxed region
           ctx.translate(canvas.width, 0);
           ctx.scale(-1, 1);
           if (img) {
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, srcW2, srcH2, dx, dy, drawW, drawH);
           }
         } catch (_) {}
 
@@ -298,15 +299,37 @@ export function HandDetection({
         ctx.restore();
         ctx.save();
 
-        // Draw hand landmarks if enabled (with mirror effect applied separately)
+        // Draw hand landmarks if enabled (with mirror + contain mapping)
         if (
           showLandmarks &&
           results.multiHandLandmarks &&
           results.multiHandLandmarks.length
         ) {
-          // Apply same mirror transform for landmarks
+          // Recompute draw rect (same as video) so overlay aligns
+          const dstW = canvas.width;
+          const dstH = canvas.height;
+          const srcW2 = (img && img.width) || video.videoWidth || width;
+          const srcH2 = (img && img.height) || video.videoHeight || height;
+          const dstAR = dstW / dstH;
+          const srcAR = srcW2 / srcH2;
+
+          let drawW = dstW;
+          let drawH = dstH;
+          if (srcAR > dstAR) {
+            drawW = dstW;
+            drawH = Math.max(1, Math.floor(dstW / srcAR));
+          } else {
+            drawH = dstH;
+            drawW = Math.max(1, Math.floor(dstH * srcAR));
+          }
+          const dx = Math.floor((dstW - drawW) / 2);
+          const dy = Math.floor((dstH - drawH) / 2);
+
+          // Mirror, then map normalized coords into the letterboxed region
           ctx.translate(canvas.width, 0);
           ctx.scale(-1, 1);
+          ctx.translate(dx, dy);
+          ctx.scale(drawW / canvas.width, drawH / canvas.height);
 
           drawLandmarks(
             ctx,
@@ -341,7 +364,6 @@ export function HandDetection({
             const lbl = classes[bestIdx] ?? `${bestIdx}`;
 
             // For UI
-            let bestConfAny = conf;
             let bestLabelAny = lbl;
             let bestConf = conf >= confidenceThreshold ? conf : -1;
             let bestLabel = bestConf >= 0 ? lbl : '';
@@ -387,7 +409,10 @@ export function HandDetection({
             // Exponential moving average smoothing for expected label confidence
             const rawExpected = Math.max(0, Math.min(1, expectedConf));
             const prev = emaConfRef.current || 0;
-            const smoothed = prev === 0 ? rawExpected : prev * SMOOTH_ALPHA + rawExpected * (1 - SMOOTH_ALPHA);
+            const smoothed =
+              prev === 0
+                ? rawExpected
+                : prev * SMOOTH_ALPHA + rawExpected * (1 - SMOOTH_ALPHA);
             emaConfRef.current = smoothed;
 
             // Emit live update using smoothed expected confidence percent (0-100)
@@ -406,8 +431,11 @@ export function HandDetection({
             const keepThreshold = Math.max(0.5, startThreshold - 0.1); // e.g., 0.65
 
             const canStart =
-              isCorrectGesture && isHandCountValid && emaConfRef.current >= startThreshold;
-            const canKeep = isHandCountValid && emaConfRef.current >= keepThreshold;
+              isCorrectGesture &&
+              isHandCountValid &&
+              emaConfRef.current >= startThreshold;
+            const canKeep =
+              isHandCountValid && emaConfRef.current >= keepThreshold;
 
             if (!detectionTimerRef.current) {
               if (canStart) {
@@ -570,7 +598,7 @@ export function HandDetection({
     <div
       ref={containerRef}
       className={`relative ${containerClassName}`}
-      style={{ width: '100%', aspectRatio: '4/3' }}
+      style={{ width: '100%', height: '100%' }}
     >
       <video
         ref={videoRef}
