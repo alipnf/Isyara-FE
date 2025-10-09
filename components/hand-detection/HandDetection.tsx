@@ -264,7 +264,7 @@ export function HandDetection({
         ctx.save();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw video frame with mirror effect, preserving aspect ratio (contain)
+        // Draw video frame with mirror effect, preserving aspect ratio (cover)
         try {
           const dstW = canvas.width;
           const dstH = canvas.height;
@@ -273,19 +273,20 @@ export function HandDetection({
           const dstAR = dstW / dstH;
           const srcAR = srcW2 / srcH2;
 
-          let drawW = dstW;
-          let drawH = dstH;
+          // For cover: scale so that the destination area is fully covered
+          let drawW: number;
+          let drawH: number;
           if (srcAR > dstAR) {
-            // source is wider -> fit width
-            drawW = dstW;
-            drawH = Math.max(1, Math.floor(dstW / srcAR));
-          } else {
-            // source is taller/narrower -> fit height
+            // Source is wider -> fit height, crop left/right
             drawH = dstH;
             drawW = Math.max(1, Math.floor(dstH * srcAR));
+          } else {
+            // Source is taller/narrower -> fit width, crop top/bottom
+            drawW = dstW;
+            drawH = Math.max(1, Math.floor(dstW / srcAR));
           }
-          const dx = Math.floor((dstW - drawW) / 2);
-          const dy = Math.floor((dstH - drawH) / 2);
+          const dx = Math.floor((dstW - drawW) / 2); // negative if wider
+          const dy = Math.floor((dstH - drawH) / 2); // negative if taller
 
           // Mirror horizontally then draw inside letterboxed region
           ctx.translate(canvas.width, 0);
@@ -299,7 +300,7 @@ export function HandDetection({
         ctx.restore();
         ctx.save();
 
-        // Draw hand landmarks if enabled (with mirror + contain mapping)
+        // Draw hand landmarks if enabled (with mirror + cover mapping)
         if (
           showLandmarks &&
           results.multiHandLandmarks &&
@@ -313,14 +314,16 @@ export function HandDetection({
           const dstAR = dstW / dstH;
           const srcAR = srcW2 / srcH2;
 
-          let drawW = dstW;
-          let drawH = dstH;
+          let drawW: number;
+          let drawH: number;
           if (srcAR > dstAR) {
-            drawW = dstW;
-            drawH = Math.max(1, Math.floor(dstW / srcAR));
-          } else {
+            // Source is wider -> fit height, crop left/right
             drawH = dstH;
             drawW = Math.max(1, Math.floor(dstH * srcAR));
+          } else {
+            // Source is taller/narrower -> fit width, crop top/bottom
+            drawW = dstW;
+            drawH = Math.max(1, Math.floor(dstW / srcAR));
           }
           const dx = Math.floor((dstW - drawW) / 2);
           const dy = Math.floor((dstH - drawH) / 2);
