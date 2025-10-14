@@ -9,51 +9,9 @@ interface Landmark {
 
 type Coordinate = [number, number, number];
 
-// Build per-hand 63-dim features from a single hand (21 landmarks x 3)
-function extractSingleHand63(
-  hand: Landmark[] | null | undefined
-): Float32Array | null {
-  if (!hand || hand.length !== 21) return null;
-
-  const coords: Coordinate[] = hand.map(
-    (lm: Landmark): Coordinate => [lm.x, lm.y, lm.z]
-  );
-
-  // Use wrist as reference point
-  const wrist = coords[0];
-
-  // Relative to wrist
-  const rel: Coordinate[] = coords.map((coord): Coordinate => {
-    const [x, y, z] = coord;
-    return [x - wrist[0], y - wrist[1], z - wrist[2]];
-  });
-
-  // Normalize by max XY radius
-  const radii: number[] = rel.map((coord) => Math.hypot(coord[0], coord[1]));
-  let maxRadius = Math.max(...radii);
-  if (!isFinite(maxRadius) || maxRadius < 1e-6) maxRadius = 1.0;
-
-  const relScaled: Coordinate[] = rel.map(
-    (coord): Coordinate => [
-      coord[0] / maxRadius,
-      coord[1] / maxRadius,
-      coord[2] / maxRadius,
-    ]
-  );
-
-  // Flatten to 63 features
-  const out = new Float32Array(63);
-  let k = 0;
-  for (let i = 0; i < 21; i++) {
-    out[k++] = relScaled[i][0];
-    out[k++] = relScaled[i][1];
-    out[k++] = relScaled[i][2];
-  }
-  return out;
-}
-
-// Extract 127-dim features from up to two hands: 63 per hand + 1 hand_count
-// Accepts either a single-hand array (Landmark[]) or multi-hand array (Landmark[][])
+// Extract 126-dim features from up to two hands (matching web implementation)
+// Normalization: relative to wrist + scaled by max 3D distance
+// Returns Float32Array(126) following Python preprocessing
 export function extractFeatures(
   landmarks: Landmark[] | Landmark[][] | null | undefined
 ): Float32Array | null {
@@ -69,24 +27,50 @@ export function extractFeatures(
     hands = [landmarks as Landmark[]];
   }
 
-  const detectedHands = hands.length;
+  if (hands.length === 0) return null;
 
-  // Prepare output: 126 for two hands + 1 for hand_count
-  const features = new Float32Array(127);
-  // Fill first 126 with per-hand features; default zeros if a hand missing
-  for (let i = 0; i < 2; i++) {
-    const start = i * 63;
-    const hand = hands[i];
-    const f = extractSingleHand63(hand);
-    if (f) {
-      features.set(f, start);
-    } else {
-      // leave zeros if no hand
+  const features: number[] = [];
+
+  for (const hand of hands) {
+    if (!hand || hand.length !== 21) continue;
+
+    // Convert to array of [x,y,z]
+    const points: Coordinate[] = hand.map(
+      (lm: Landmark): Coordinate => [lm.x, lm.y, lm.z]
+    );
+
+    // Wrist is index 0 in MediaPipe
+    const wrist = points[0];
+
+    // Subtract wrist (relative coordinates)
+    const rel: Coordinate[] = points.map(
+      (p): Coordinate => [p[0] - wrist[0], p[1] - wrist[1], p[2] - wrist[2]]
+    );
+
+    // Scale by max distance from wrist (3D distance)
+    let maxDist = 0;
+    for (const r of rel) {
+      const d = Math.hypot(r[0], r[1], r[2]);
+      if (d > maxDist) maxDist = d;
+    }
+
+    const norm: Coordinate[] =
+      maxDist > 0
+        ? rel.map(
+            (r): Coordinate => [r[0] / maxDist, r[1] / maxDist, r[2] / maxDist]
+          )
+        : rel;
+
+    // Flatten [x0, y0, z0, x1, y1, z1, ...]
+    for (const n of norm) {
+      features.push(n[0], n[1], n[2]);
     }
   }
 
-  // Append hand count as last feature
-  features[126] = detectedHands;
+  // Pad if only 1 hand detected (to 126 dims)
+  if (hands.length === 1) {
+    for (let i = 0; i < 63; i++) features.push(0);
+  }
 
-  return features;
+  return new Float32Array(features);
 }

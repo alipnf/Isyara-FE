@@ -43,11 +43,10 @@ export function useMediaPipeHands(): MutableRefObject<any> {
       });
 
       hands.setOptions({
-        selfieMode: true,
         maxNumHands: 2,
-        modelComplexity: 1, // increase to 2 if device performance allows for more stability
-        minDetectionConfidence: 0.6,
-        minTrackingConfidence: 0.7,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5,
+        modelComplexity: 1,
       });
 
       handsRef.current = hands;
@@ -86,12 +85,12 @@ export function drawLandmarks(
   height: number
 ): void {
   const { drawConnectors, drawLandmarks: mpDrawLandmarks } = window;
-  
+
   // Try to use MediaPipe's built-in drawing utilities
   if (drawConnectors && mpDrawLandmarks) {
     const HAND_CONNECTIONS =
       window.HAND_CONNECTIONS || (window as any).Hands?.HAND_CONNECTIONS;
-    
+
     for (const lm of landmarks) {
       if (HAND_CONNECTIONS) {
         drawConnectors(ctx, lm, HAND_CONNECTIONS, {
@@ -115,21 +114,38 @@ export function drawLandmarks(
         ctx.arc(point.x * width, point.y * height, 4, 0, 2 * Math.PI);
         ctx.fill();
       }
-      
+
       // Draw connections (simplified - just wrist to fingertips)
       ctx.strokeStyle = '#34d399';
       ctx.lineWidth = 2;
-      
+
       // Connection indices for hand (simplified)
       const connections = [
-        [0, 1], [1, 2], [2, 3], [3, 4], // Thumb
-        [0, 5], [5, 6], [6, 7], [7, 8], // Index
-        [0, 9], [9, 10], [10, 11], [11, 12], // Middle
-        [0, 13], [13, 14], [14, 15], [15, 16], // Ring
-        [0, 17], [17, 18], [18, 19], [19, 20], // Pinky
-        [5, 9], [9, 13], [13, 17], // Palm
+        [0, 1],
+        [1, 2],
+        [2, 3],
+        [3, 4], // Thumb
+        [0, 5],
+        [5, 6],
+        [6, 7],
+        [7, 8], // Index
+        [0, 9],
+        [9, 10],
+        [10, 11],
+        [11, 12], // Middle
+        [0, 13],
+        [13, 14],
+        [14, 15],
+        [15, 16], // Ring
+        [0, 17],
+        [17, 18],
+        [18, 19],
+        [19, 20], // Pinky
+        [5, 9],
+        [9, 13],
+        [13, 17], // Palm
       ];
-      
+
       for (const [start, end] of connections) {
         if (lm[start] && lm[end]) {
           ctx.beginPath();

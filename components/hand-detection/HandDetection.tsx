@@ -4,6 +4,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as tf from '@tensorflow/tfjs';
 import { useMediaPipeHands, drawLandmarks } from './MediaPipeHands';
 import { extractFeatures } from './FeatureExtraction';
+import {
+  loadModelWithFallback,
+  fetchJSONWithFallback,
+} from '@/utils/modelLoader';
 
 interface HandDetectionProps {
   onDetection?: (label: string, confidence: number) => void;
@@ -106,35 +110,18 @@ export function HandDetection({
           await tf.setBackend('webgl');
         } catch (_) {}
 
-        // Try loading model from different paths
-        const tryPaths = async (
-          candidates: string[],
-          loader: (url: string) => Promise<any>
-        ) => {
-          let lastErr = null;
-          for (const url of candidates) {
-            try {
-              return await loader(url);
-            } catch (e) {
-              lastErr = e;
-            }
-          }
-          throw lastErr || new Error('All paths failed');
-        };
-
-        // Load model and classes metadata in parallel
+        // Load model and classes metadata in parallel using patched loader
         const [loadedModel, meta] = await Promise.all([
-          tryPaths([modelPath, '/model.json', 'models/model.json'], (u) =>
-            tf.loadLayersModel(u)
-          ),
-          tryPaths(
-            [classesPath, '/classes.json', 'models/classes.json'],
-            async (u) => {
-              const r = await fetch(u);
-              if (!r.ok) throw new Error(`HTTP ${r.status} on ${u}`);
-              return await r.json();
-            }
-          ),
+          loadModelWithFallback([
+            modelPath,
+            '/models/model.json',
+            'models/model.json',
+          ]),
+          fetchJSONWithFallback([
+            classesPath,
+            '/models/classes.json',
+            'models/classes.json',
+          ]),
         ]);
 
         if (!mounted) return;
@@ -348,10 +335,10 @@ export function HandDetection({
           results.multiHandLandmarks &&
           results.multiHandLandmarks.length
         ) {
-          // Build combined features for up to 2 hands: 127 dims (63x2 + hand_count)
+          // Build combined features for up to 2 hands: 126 dims (63x2)
           const feat = extractFeatures(results.multiHandLandmarks);
-          if (feat) {
-            const input = tf.tensor(feat, [1, 127], 'float32');
+          if (feat && feat.length === 126) {
+            const input = tf.tensor(feat, [1, 126], 'float32');
             const probs = model.predict(input) as tf.Tensor;
             const pData = probs.dataSync();
             input.dispose();
