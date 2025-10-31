@@ -74,6 +74,18 @@ export function HandDetection({
   // Exponential moving average for expected-label confidence
   const emaConfRef = useRef<number>(0);
 
+  // Performance instrumentation state
+  const [fps, setFps] = useState<number>(0);
+  const [avgInferMs, setAvgInferMs] = useState<number>(0);
+  const [avgTotalMs, setAvgTotalMs] = useState<number>(0);
+  const [tfTensors, setTfTensors] = useState<number>(0);
+  const [tfMemMB, setTfMemMB] = useState<number>(0);
+  const [tfBackend, setTfBackend] = useState<string>('');
+  const frameTimesRef = useRef<number[]>([]);
+  const inferTimesRef = useRef<number[]>([]);
+  const totalTimesRef = useRef<number[]>([]);
+  const lastStatsUpdateRef = useRef<number>(0);
+
   // References for hold timer
   const detectionTimerRef = useRef<{
     label: string;
@@ -108,6 +120,9 @@ export function HandDetection({
         await tf.ready();
         try {
           await tf.setBackend('webgl');
+        } catch (_) {}
+        try {
+          setTfBackend(tf.getBackend());
         } catch (_) {}
 
         // Load model and classes metadata in parallel using patched loader
@@ -221,6 +236,7 @@ export function HandDetection({
 
       // Configure MediaPipe Hands
       handsRef.current.onResults((results: any) => {
+        const frameStart = performance.now();
         if (!ctx || !canvas || !containerRef.current) return;
 
         // Adapt canvas size to container size (respect parent layout)
@@ -338,11 +354,13 @@ export function HandDetection({
           // Build combined features for up to 2 hands: 126 dims (63x2)
           const feat = extractFeatures(results.multiHandLandmarks);
           if (feat && feat.length === 126) {
+            const inferStart = performance.now();
             const input = tf.tensor(feat, [1, 126], 'float32');
             const probs = model.predict(input) as tf.Tensor;
             const pData = probs.dataSync();
             input.dispose();
             probs.dispose();
+            const inferMs = performance.now() - inferStart;
 
             // Argmax label
             let bestIdx = 0;
@@ -464,6 +482,11 @@ export function HandDetection({
                 setShowHoldAlert(false);
               }
             }
+
+            // Record performance metrics (inference time)
+            inferTimesRef.current.push(inferMs);
+            if (inferTimesRef.current.length > 120)
+              inferTimesRef.current.shift();
           } else {
             setCurrentDetectedLabel(null);
             onLiveUpdateRef.current?.(null, 0);
@@ -474,6 +497,40 @@ export function HandDetection({
           // Model not loaded or no landmarks
           setCurrentDetectedLabel(null);
           onLiveUpdateRef.current?.(null, 0);
+        }
+
+        // Record total frame time and update FPS
+        const frameEnd = performance.now();
+        const totalMs = frameEnd - frameStart;
+        totalTimesRef.current.push(totalMs);
+        if (totalTimesRef.current.length > 120) totalTimesRef.current.shift();
+
+        const nowTs = frameEnd;
+        const times = frameTimesRef.current;
+        times.push(nowTs);
+        while (times.length && times[0] < nowTs - 1000) times.shift();
+
+        // Throttle state updates to ~4 Hz
+        const lastUpdate = lastStatsUpdateRef.current;
+        if (!lastUpdate || nowTs - lastUpdate > 250) {
+          lastStatsUpdateRef.current = nowTs;
+          // FPS
+          setFps(times.length);
+          // Averages
+          const avg = (arr: number[]) =>
+            arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+          setAvgInferMs(Number(avg(inferTimesRef.current).toFixed(1)));
+          setAvgTotalMs(Number(avg(totalTimesRef.current).toFixed(1)));
+          // TFJS memory
+          try {
+            const mem = tf.memory();
+            setTfTensors(mem.numTensors);
+            setTfMemMB(Number((mem.numBytes / (1024 * 1024)).toFixed(2)));
+          } catch (_) {}
+          // Backend name
+          try {
+            setTfBackend(tf.getBackend());
+          } catch (_) {}
         }
 
         ctx.restore();
@@ -584,6 +641,30 @@ export function HandDetection({
     }
   };
 
+  // Backend switcher
+  const cycleBackend = async () => {
+    const candidates = ['webgpu', 'webgl', 'wasm', 'cpu'];
+    const cur = (() => {
+      try {
+        return tf.getBackend();
+      } catch {
+        return '';
+      }
+    })();
+    const idx = Math.max(0, candidates.indexOf(cur));
+    for (let i = 1; i <= candidates.length; i++) {
+      const next = candidates[(idx + i) % candidates.length];
+      try {
+        await tf.setBackend(next as any);
+        await tf.ready();
+        setTfBackend(tf.getBackend());
+        break;
+      } catch (_) {
+        // try next
+      }
+    }
+  };
+
   return (
     <div
       ref={containerRef}
@@ -640,6 +721,28 @@ export function HandDetection({
           </div>
         </div>
       )}
+
+      {/* Performance stats panel */}
+      <div className="absolute bottom-2 left-2 bg-black/60 text-white px-3 py-2 rounded text-xs space-y-1">
+        <div>
+          Backend:{' '}
+          <span className="font-semibold">{tfBackend || 'unknown'}</span>{' '}
+          <button onClick={cycleBackend} className="ml-2 underline">
+            ganti
+          </button>
+        </div>
+        <div>
+          FPS: <span className="font-semibold">{fps}</span>
+        </div>
+        <div>
+          Latency: model <span className="font-semibold">{avgInferMs} ms</span>{' '}
+          · total <span className="font-semibold">{avgTotalMs} ms</span>
+        </div>
+        <div>
+          TFJS: tensors <span className="font-semibold">{tfTensors}</span> · mem{' '}
+          <span className="font-semibold">{tfMemMB} MB</span>
+        </div>
+      </div>
     </div>
   );
 }
