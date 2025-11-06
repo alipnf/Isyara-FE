@@ -115,6 +115,25 @@ export function SettingsDialog({
               />
             </div>
           </div>
+
+          {/* Performance stats toggle */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label>Tampilkan Metrik Kinerja</Label>
+              <p className="text-xs text-muted-foreground">
+                Backend, FPS, latensi, dan memori TFJS pada tampilan kamera
+              </p>
+            </div>
+            <Switch
+              checked={settings.showPerformanceStats}
+              onCheckedChange={(checked) =>
+                onSettingsChange({
+                  ...settings,
+                  showPerformanceStats: checked,
+                })
+              }
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

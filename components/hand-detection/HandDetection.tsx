@@ -15,6 +15,7 @@ interface HandDetectionProps {
   onLiveUpdate?: (label: string | null, confidence: number) => void; // per-frame label + confidence (0-100)
   isDetecting: boolean;
   showLandmarks?: boolean;
+  showPerformanceStats?: boolean;
   width?: number;
   height?: number;
   confidenceThreshold?: number;
@@ -31,6 +32,7 @@ export function HandDetection({
   onLiveUpdate,
   isDetecting,
   showLandmarks = true,
+  showPerformanceStats = false,
   width = 640,
   height = 480,
   confidenceThreshold = 0.75,
@@ -723,26 +725,38 @@ export function HandDetection({
       )}
 
       {/* Performance stats panel */}
-      <div className="absolute bottom-2 left-2 bg-black/60 text-white px-3 py-2 rounded text-xs space-y-1">
-        <div>
-          Backend:{' '}
-          <span className="font-semibold">{tfBackend || 'unknown'}</span>{' '}
-          <button onClick={cycleBackend} className="ml-2 underline">
-            ganti
-          </button>
+      {showPerformanceStats && (
+        <div
+          className="absolute bottom-2 left-2 bg-black/60 text-white px-3 py-2 rounded text-xs space-y-1"
+          data-performance-panel="true"
+          data-backend={tfBackend || 'webgl'}
+          data-fps={fps}
+          data-model-latency={avgInferMs}
+          data-total-latency={avgTotalMs}
+          data-memory={tfMemMB}
+          data-tensors={tfTensors}
+        >
+          <div>
+            Backend:{' '}
+            <span className="font-semibold">{tfBackend || 'unknown'}</span>{' '}
+            <button onClick={cycleBackend} className="ml-2 underline">
+              ganti
+            </button>
+          </div>
+          <div>
+            FPS: <span className="font-semibold">{fps}</span>
+          </div>
+          <div>
+            Latency: model{' '}
+            <span className="font-semibold">{avgInferMs} ms</span> · total{' '}
+            <span className="font-semibold">{avgTotalMs} ms</span>
+          </div>
+          <div>
+            TFJS: tensors <span className="font-semibold">{tfTensors}</span> ·
+            mem <span className="font-semibold">{tfMemMB} MB</span>
+          </div>
         </div>
-        <div>
-          FPS: <span className="font-semibold">{fps}</span>
-        </div>
-        <div>
-          Latency: model <span className="font-semibold">{avgInferMs} ms</span>{' '}
-          · total <span className="font-semibold">{avgTotalMs} ms</span>
-        </div>
-        <div>
-          TFJS: tensors <span className="font-semibold">{tfTensors}</span> · mem{' '}
-          <span className="font-semibold">{tfMemMB} MB</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

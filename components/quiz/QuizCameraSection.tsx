@@ -84,6 +84,7 @@ export function QuizCameraSection({
             <HandDetection
               isDetecting={isDetecting}
               showLandmarks={settings.showHandLandmarks}
+              showPerformanceStats={settings.showPerformanceStats}
               onDetection={onDetection}
               onLiveUpdate={onLiveUpdate}
               onStatusChange={onStatusChange}

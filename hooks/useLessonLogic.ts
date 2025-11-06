@@ -22,6 +22,7 @@ export function useLessonLogic(
     audioFeedback: true,
     autoAdvance: true,
     holdDuration: [3],
+    showPerformanceStats: false,
   });
 
   useEffect(() => {

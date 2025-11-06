@@ -4,6 +4,7 @@ export interface LessonSettings {
   audioFeedback: boolean;
   autoAdvance: boolean;
   holdDuration: [number];
+  showPerformanceStats: boolean;
 }
 
 export interface Category {

@@ -25,6 +25,7 @@ export function useQuizLogic() {
 
   const [settings, setSettings] = useState<LessonSettings>({
     showHandLandmarks: true,
+    showPerformanceStats: false,
     audioFeedback: false,
     autoAdvance: true,
     holdDuration: [2],

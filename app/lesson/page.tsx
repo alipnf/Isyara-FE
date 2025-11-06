@@ -13,6 +13,7 @@ import {
   isCategoryKey,
   type CategoryKey,
 } from '@/components/lesson';
+import { PerformanceRecorderInline } from '@/components/lesson/PerformanceRecorderInline';
 import { useLessonLogic } from '@hooks/useLessonLogic';
 import {
   completeLessonByKey,
@@ -182,6 +183,11 @@ function LessonPageContent() {
         categoryName={selectedCategory}
         xpReward={alreadyCompleted ? 0 : xpReward}
       />
+
+      {/* Performance Recorder - Only show if performance stats are enabled */}
+      {settings.showPerformanceStats && cameraEnabled && (
+        <PerformanceRecorderInline />
+      )}
     </div>
   );
 }
