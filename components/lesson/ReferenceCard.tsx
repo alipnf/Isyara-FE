@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useMemo } from 'react';
 import { CategoryKey } from '@type/lesson';
 
 interface ReferenceCardProps {
@@ -33,6 +34,20 @@ export function ReferenceCard({
   const currentIndex = groupItems.indexOf(selectedItem);
   const isFirst = currentIndex === 0;
   const isLast = currentIndex === groupItems.length - 1;
+
+  useEffect(() => {
+    if (selectedCategory !== 'huruf') return;
+    groupItems.forEach((item) => {
+      const img = new Image();
+      img.src = `/hand/${item}/body%20dot%20(1).jpg`;
+    });
+  }, [selectedCategory, groupItems]);
+
+  const imageSrc = useMemo(() => {
+    return selectedCategory === 'huruf'
+      ? `/hand/${selectedItem}/body%20dot%20(1).jpg`
+      : `/bisindo-sign-language-hand-gesture-for-letter-.jpg`;
+  }, [selectedCategory, selectedItem]);
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -69,14 +84,12 @@ export function ReferenceCard({
         {/* Reference Image */}
         <div className="aspect-square rounded-xl border bg-background overflow-hidden shadow-sm">
           <img
-            src={
-              selectedCategory === 'huruf'
-                ? `/hand/${selectedItem}/body%20dot%20(1).jpg`
-                : `/bisindo-sign-language-hand-gesture-for-letter-.jpg`
-            }
+            key={selectedItem}
+            src={imageSrc}
             alt={`Gerakan tangan BISINDO untuk ${selectedItem}`}
             className="w-full h-full object-cover"
-            loading="lazy"
+            loading="eager"
+            decoding="async"
           />
         </div>
 
