@@ -7,7 +7,7 @@ import {
   getLessonRoute,
 } from '@/components/learn';
 import type { LearningUnit as LearningUnitType } from '@type/learn';
-import { fetchLessonsWithProgress, buildUnits } from '@/utils/supabase/learn';
+import { buildUnitsWithProgress } from '@/utils/supabase/learn';
 import { learningUnits as mockUnits } from '@/components/learn';
 import { getMyUser } from '@/utils/supabase/profile';
 import { Spinner } from '@/components/ui/spinner';
@@ -30,9 +30,9 @@ export default function LearnPage() {
         setXp(u?.xp ?? 0);
         setLevel(u?.level ?? 1);
         try {
-          const rows = await fetchLessonsWithProgress();
+          // Load units from static curriculum + user progress
+          const built = await buildUnitsWithProgress();
           if (!mounted) return;
-          const built = buildUnits(rows);
           setUnits(built.length ? built : mockUnits);
         } catch (_e) {
           // If schema not ready, fallback to mock
