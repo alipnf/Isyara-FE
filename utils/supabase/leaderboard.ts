@@ -12,7 +12,7 @@ function initials(input: string | null | undefined) {
 export async function fetchTop5Users(): Promise<LeaderboardUser[]> {
   const { data, error } = await supabase
     .from('users')
-    .select('id, username, avatar_url, level, xp, total_lessons_completed')
+    .select('id, full_name, avatar_url, level, xp, total_lessons_completed')
     .order('xp', { ascending: false })
     .limit(5);
 
@@ -20,10 +20,10 @@ export async function fetchTop5Users(): Promise<LeaderboardUser[]> {
 
   const top = (data || []).map((row, idx) => ({
     rank: idx + 1,
-    name: row.username || 'Pengguna',
+    name: row.full_name || 'Pengguna',
     xp: row.xp ?? 0,
     level: row.level ?? 1,
-    avatar: initials(row.username),
+    avatar: initials(row.full_name),
     streak: 0,
     lessonsCompleted: row.total_lessons_completed ?? 0,
     isCurrentUser: false,
@@ -56,7 +56,7 @@ export async function fetchCurrentUserRank(): Promise<LeaderboardUser | null> {
 
   const { data, error } = await supabase
     .from('users')
-    .select('id, username, avatar_url, level, xp, total_lessons_completed')
+    .select('id, full_name, avatar_url, level, xp, total_lessons_completed')
     .eq('id', user.id)
     .single();
   if (error) throw error;
@@ -72,10 +72,10 @@ export async function fetchCurrentUserRank(): Promise<LeaderboardUser | null> {
   const rank = (count ?? 0) + 1;
   const mapped: LeaderboardUser = {
     rank,
-    name: data.username || 'Pengguna',
+    name: data.full_name || 'Pengguna',
     xp: data.xp ?? 0,
     level: data.level ?? 1,
-    avatar: initials(data.username),
+    avatar: initials(data.full_name),
     streak: 0,
     lessonsCompleted: data.total_lessons_completed ?? 0,
     isCurrentUser: true,

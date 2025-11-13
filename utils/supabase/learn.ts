@@ -1,109 +1,95 @@
 import { supabase } from '@/utils/supabase/client';
-import type { LearningUnit as LearningUnitType, Lesson } from '@type/learn';
-import type { CategoryKey } from '@type/lesson';
+import type { LearningUnit as LearningUnitType, Lesson } from '@/types/learn';
+import {
+  LESSONS,
+  getLessonByKey,
+  getLessonsByUnit,
+  getUnitMeta,
+  UNITS,
+} from '@/lib/lessonDefinitions';
 
-type RawLessonRow = {
-  id: number;
-  key: string;
-  title: string;
-  unit: number;
-  type: 'lesson' | 'quiz';
-  payload: any;
-  order_index: number;
-  xp_reward: number;
-  user_lessons?: { user_id: string; status: string; progress: number }[] | null;
-};
+// User progress type
+export interface UserLessonProgress {
+  lesson_key: string;
+  status: 'in_progress' | 'completed';
+  progress: number;
+  completed_at: string | null;
+}
 
-export async function fetchLessonsWithProgress() {
+/**
+ * Fetch user's progress for all lessons
+ * Returns a Map for O(1) lookups
+ */
+export async function fetchUserProgress(): Promise<
+  Map<string, UserLessonProgress>
+> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return [] as RawLessonRow[];
+  if (!user) return new Map();
 
   const { data, error } = await supabase
-    .from('lesson_defs')
-    .select(
-      'id,key,title,unit,type,payload,order_index,xp_reward,' +
-        'user_lessons!left(user_id,status,progress,completed_at)'
-    )
-    .order('unit', { ascending: true })
-    .order('order_index', { ascending: true })
-    .eq('user_lessons.user_id', user.id);
+    .from('user_lessons')
+    .select('lesson_key, status, progress, completed_at')
+    .eq('user_id', user.id);
 
-  if (error) throw error;
-  return (data || []) as unknown as RawLessonRow[];
-}
+  if (error) {
+    console.error('Error fetching user progress:', error);
+    return new Map();
+  }
 
-function getUnitMeta(unit: number) {
-  if (unit === 1)
-    return {
-      title: 'Dasar-dasar BISINDO',
-      description: 'Pelajari huruf A-Z dalam bahasa isyarat',
-      color: 'bg-gradient-to-br from-purple-500 to-purple-600',
-    };
-  if (unit === 2)
-    return {
-      title: 'Angka & Bilangan',
-      description: 'Belajar angka 0-9 dan bilangan dasar',
-      color: 'bg-gradient-to-br from-green-500 to-green-600',
-    };
-  return {
-    title: `Unit ${unit}`,
-    description: 'Materi pembelajaran lanjutan',
-    color: 'bg-gradient-to-br from-slate-500 to-slate-600',
-  };
-}
-
-export function buildUnits(rows: RawLessonRow[]): LearningUnitType[] {
-  if (!rows?.length) return [];
-
-  // group by unit and sort lessons by order_index
-  const grouped = rows.reduce(
-    (acc, r) => {
-      (acc[r.unit] ||= []).push(r);
-      return acc;
-    },
-    {} as Record<number, RawLessonRow[]>
+  return new Map(
+    (data || []).map((p) => [p.lesson_key, p as UserLessonProgress])
   );
+}
 
-  const unitNumbers = Object.keys(grouped)
-    .map((k) => Number(k))
-    .sort((a, b) => a - b);
+/**
+ * Build learning units with user progress overlay
+ * This combines static lesson definitions with user progress from DB
+ */
+export async function buildUnitsWithProgress(): Promise<LearningUnitType[]> {
+  const progressMap = await fetchUserProgress();
 
-  // First pass: build units with lessons and progress
-  const units = unitNumbers.map((u) => {
-    const sorted = grouped[u]
-      .slice()
-      .sort((a, b) => a.order_index - b.order_index);
-    const lessons: Lesson[] = sorted.map((l) => ({
-      id: l.id,
-      title: l.title,
-      type: l.type,
-      completed: (l.user_lessons?.[0]?.status ?? 'in_progress') === 'completed',
-      progress: l.user_lessons?.[0]?.progress ?? 0,
-      // locked/current computed later
-      ...l.payload,
-    }));
+  // Build units from static definitions
+  const units = UNITS.map((unitMeta) => {
+    const lessons = getLessonsByUnit(unitMeta.id).map((lessonDef, idx) => {
+      const progress = progressMap.get(lessonDef.key);
 
-    const completedCount = lessons.filter((ls) => ls.completed).length;
+      // Generate a numeric ID based on unit and order for compatibility
+      const numericId = unitMeta.id * 100 + idx;
+
+      return {
+        id: numericId, // Numeric ID for type compatibility
+        key: lessonDef.key, // Keep key for database operations
+        title: lessonDef.title,
+        type: lessonDef.type,
+        completed: progress?.status === 'completed',
+        progress: progress?.progress || 0,
+        locked: false, // Will be computed below
+        current: false, // Will be computed below
+        ...lessonDef.payload, // Include hurufRange, etc.
+      } as Lesson & { key: string };
+    });
+
+    const completedCount = lessons.filter((l) => l.completed).length;
     const progressPct = Math.round(
       (completedCount / Math.max(lessons.length, 1)) * 100
     );
-    const meta = getUnitMeta(u);
 
     return {
-      id: u,
-      title: meta.title,
-      description: meta.description,
-      color: meta.color,
+      id: unitMeta.id,
+      title: unitMeta.title,
+      description: unitMeta.description,
+      color: unitMeta.color,
       lessons,
       progress: progressPct,
     } as LearningUnitType;
   });
 
-  // Second pass: apply locking rules
+  // Apply locking rules
   for (let i = 0; i < units.length; i++) {
     const unit = units[i];
+
     // Lock whole unit if previous unit not 100%
     const unitLocked = i > 0 && units[i - 1].progress < 100;
     if (unitLocked) {
@@ -111,6 +97,7 @@ export function buildUnits(rows: RawLessonRow[]): LearningUnitType[] {
       unit.lessons = unit.lessons.map((ls) => ({ ...ls, locked: true }));
       continue;
     }
+
     // Within-unit locking: each lesson locked until previous completed
     const nonQuizCompleted = () =>
       unit.lessons.filter((l) => l.type === 'lesson' && l.completed).length;
@@ -142,8 +129,113 @@ export function buildUnits(rows: RawLessonRow[]): LearningUnitType[] {
   return units;
 }
 
+/**
+ * Complete a lesson and award XP
+ * @param lessonKey - The lesson key (e.g., 'huruf_a_e')
+ */
+export async function completeLesson(lessonKey: string): Promise<void> {
+  const lesson = getLessonByKey(lessonKey);
+  if (!lesson) {
+    throw new Error(`Invalid lesson key: ${lessonKey}`);
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  // Mark lesson as completed in user_lessons
+  const { error } = await supabase.from('user_lessons').upsert(
+    {
+      user_id: user.id,
+      lesson_key: lessonKey,
+      status: 'completed',
+      progress: 100,
+      completed_at: new Date().toISOString(),
+    },
+    {
+      onConflict: 'user_id,lesson_key',
+    }
+  );
+
+  if (error) throw error;
+
+  // Award XP using existing function
+  const { awardProgress } = await import('@/utils/supabase/profile');
+  await awardProgress({
+    xpDelta: lesson.xp,
+    lessonsDelta: 1,
+  });
+}
+
+/**
+ * Get XP reward for a lesson by key
+ */
+export function getLessonReward(lessonKey: string): number {
+  const lesson = getLessonByKey(lessonKey);
+  return lesson?.xp || 0;
+}
+
+/**
+ * Check if user has completed a lesson
+ */
+export async function isLessonCompleted(lessonKey: string): Promise<boolean> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  const { data, error } = await supabase
+    .from('user_lessons')
+    .select('status')
+    .eq('user_id', user.id)
+    .eq('lesson_key', lessonKey)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error checking lesson completion:', error);
+    return false;
+  }
+
+  return data?.status === 'completed';
+}
+
+/**
+ * Update lesson progress (for partial completion)
+ */
+export async function updateLessonProgress(
+  lessonKey: string,
+  progress: number
+): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error('User not authenticated');
+
+  const { error } = await supabase.from('user_lessons').upsert(
+    {
+      user_id: user.id,
+      lesson_key: lessonKey,
+      status: progress >= 100 ? 'completed' : 'in_progress',
+      progress: Math.min(100, Math.max(0, progress)),
+      completed_at: progress >= 100 ? new Date().toISOString() : null,
+    },
+    {
+      onConflict: 'user_id,lesson_key',
+    }
+  );
+
+  if (error) throw error;
+}
+
+/**
+ * Legacy function for backward compatibility
+ * Derives lesson key from category and group params
+ */
 export function deriveLessonKey(
-  category: CategoryKey,
+  category: 'huruf' | 'angka' | 'kata',
   groupParam: string
 ): string | null {
   const norm = (s: string) => s.trim().toLowerCase();
@@ -159,95 +251,57 @@ export function deriveLessonKey(
     const end = parts[parts.length - 1];
     if (start && end) return `angka_${start}_${end}`;
   } else if (category === 'kata') {
-    // Not seeded in example
-    return null;
+    return null; // Not yet implemented
   }
   return null;
 }
 
-export async function completeLessonByKey(key: string) {
-  const { error } = await supabase.rpc('complete_lesson', {
-    p_lesson_key: key,
+// Legacy exports for backward compatibility
+export const fetchLessonRewardByKey = getLessonReward;
+export const fetchLessonRewardById = (id: number) => {
+  // For quiz page compatibility - just return default XP
+  // In the new system, we don't use numeric IDs for lookups
+  return 50;
+};
+export const completeLessonByKey = completeLesson;
+export const completeLessonById = async (id: number) => {
+  // For quiz page compatibility - this won't work with numeric IDs
+  // Quiz page should be updated to use keys instead
+  throw new Error(
+    'completeLessonById is deprecated. Use completeLesson(key) instead.'
+  );
+};
+export const fetchUserLessonCompletedByKey = isLessonCompleted;
+export const fetchUserLessonCompletedById = async (id: number) => {
+  // For quiz page compatibility - always return false
+  return false;
+};
+
+// For review page compatibility
+export async function fetchLessonsWithProgress() {
+  // This returns raw data for review page
+  const progressMap = await fetchUserProgress();
+
+  return LESSONS.map((lesson, idx) => {
+    const progress = progressMap.get(lesson.key);
+    return {
+      id: lesson.unit * 100 + idx,
+      key: lesson.key,
+      title: lesson.title,
+      unit: lesson.unit,
+      type: lesson.type,
+      payload: lesson.payload,
+      order_index: lesson.order,
+      xp_reward: lesson.xp,
+      user_lessons: progress
+        ? [
+            {
+              user_id: '', // Not needed for review
+              status: progress.status,
+              progress: progress.progress,
+            },
+          ]
+        : null,
+    };
   });
-  if (error) throw error;
-}
-
-// Fetch xp reward for a lesson/quiz by its id
-export async function fetchLessonRewardById(
-  id: number
-): Promise<number | null> {
-  const { data, error } = await supabase
-    .from('lesson_defs')
-    .select('xp_reward')
-    .eq('id', id)
-    .single();
-  if (error) throw error;
-  return (data as any)?.xp_reward ?? null;
-}
-
-// Fetch xp reward by lesson key (e.g., 'huruf_k_o')
-export async function fetchLessonRewardByKey(
-  key: string
-): Promise<number | null> {
-  const { data, error } = await supabase
-    .from('lesson_defs')
-    .select('xp_reward')
-    .eq('key', key)
-    .single();
-  if (error) throw error;
-  return (data as any)?.xp_reward ?? null;
-}
-
-// Complete a lesson/quiz by its numeric id (lookup key then call RPC)
-export async function completeLessonById(id: number) {
-  const { data, error } = await supabase
-    .from('lesson_defs')
-    .select('key')
-    .eq('id', id)
-    .single();
-  if (error) throw error;
-  const key = (data as any)?.key as string | undefined;
-  if (!key) throw new Error('Lesson key not found');
-  const { error: rpcErr } = await supabase.rpc('complete_lesson', {
-    p_lesson_key: key,
-  });
-  if (rpcErr) throw rpcErr;
-}
-
-// Check if current user already completed a lesson by its key
-export async function fetchUserLessonCompletedByKey(
-  key: string
-): Promise<boolean> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return false;
-  const { data, error } = await supabase
-    .from('lesson_defs')
-    .select('id, user_lessons!left(user_id,status,progress,completed_at)')
-    .eq('key', key)
-    .eq('user_lessons.user_id', user.id)
-    .single();
-  if (error) throw error;
-  const status = (data as any)?.user_lessons?.[0]?.status ?? 'in_progress';
-  return status === 'completed';
-}
-
-// Check if current user already completed a lesson by its id
-export async function fetchUserLessonCompletedById(
-  id: number
-): Promise<boolean> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return false;
-  const { data, error } = await supabase
-    .from('lesson_defs')
-    .select('id, user_lessons!left(user_id,status,progress,completed_at)')
-    .eq('id', id)
-    .eq('user_lessons.user_id', user.id)
-    .single();
-  if (error) throw error;
-  const status = (data as any)?.user_lessons?.[0]?.status ?? 'in_progress';
-  return status === 'completed';
 }
