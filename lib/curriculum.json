@@ -1,0 +1,131 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2025-11-13T15:20:22.523354Z",
+  "model_classes": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z"
+  ],
+  "model_accuracy": 0.9533169269561768,
+  "units": [
+    {
+      "id": 1,
+      "title": "Dasar-dasar BISINDO",
+      "description": "Pelajari huruf A-Z dalam bahasa isyarat",
+      "color": "bg-gradient-to-br from-purple-500 to-purple-600",
+      "lessons": [
+        {
+          "key": "huruf_a_e",
+          "title": "Huruf A-E",
+          "type": "lesson",
+          "order": 0,
+          "xp": 50,
+          "payload": {
+            "hurufRange": ["A", "B", "C", "D", "E"]
+          }
+        },
+        {
+          "key": "huruf_f_j",
+          "title": "Huruf F-J",
+          "type": "lesson",
+          "order": 1,
+          "xp": 50,
+          "payload": {
+            "hurufRange": ["F", "G", "H", "I", "J"]
+          }
+        },
+        {
+          "key": "huruf_k_o",
+          "title": "Huruf K-O",
+          "type": "lesson",
+          "order": 2,
+          "xp": 50,
+          "payload": {
+            "hurufRange": ["K", "L", "M", "N", "O"]
+          }
+        },
+        {
+          "key": "huruf_p_t",
+          "title": "Huruf P-T",
+          "type": "lesson",
+          "order": 3,
+          "xp": 50,
+          "payload": {
+            "hurufRange": ["P", "Q", "R", "S", "T"]
+          }
+        },
+        {
+          "key": "huruf_u_z",
+          "title": "Huruf U-Z",
+          "type": "lesson",
+          "order": 4,
+          "xp": 50,
+          "payload": {
+            "hurufRange": ["U", "V", "W", "X", "Y", "Z"]
+          }
+        },
+        {
+          "key": "quiz_unit_1",
+          "title": "Kuis Huruf A-Z",
+          "type": "quiz",
+          "order": 5,
+          "xp": 100,
+          "payload": {
+            "hurufRange": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+
