@@ -55,21 +55,21 @@ function QuizPageContent() {
     return questions.length ? (answeredQuestions / questions.length) * 100 : 0;
   }, [answeredQuestions, questions.length]);
 
-  // Fetch dynamic XP reward from Supabase when opened from /learn with lesson id
+  // Fetch dynamic XP reward from static curriculum when opened from /learn with lesson id
   useEffect(() => {
     const idParam = searchParams.get('id');
     const id = idParam ? Number(idParam) : NaN;
     if (!isNaN(id)) {
-      Promise.all([
-        fetchLessonRewardById(id).catch(() => null),
-        fetchUserLessonCompletedById(id).catch(() => false),
-      ])
-        .then(([xp, done]) => {
-          setXpReward(typeof xp === 'number' ? xp : null);
+      // Get XP from static config (synchronous)
+      const xp = fetchLessonRewardById(id);
+      setXpReward(xp || null);
+
+      // Check completion status (async)
+      fetchUserLessonCompletedById(id)
+        .then((done) => {
           setAlreadyCompleted(!!done);
         })
         .catch(() => {
-          setXpReward(null);
           setAlreadyCompleted(false);
         });
     }
