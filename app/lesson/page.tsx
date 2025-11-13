@@ -60,7 +60,7 @@ function LessonPageContent() {
       : 0;
   }, [groupItems.length, completedItems.size]);
 
-  // Fetch XP reward dynamically from lesson_defs via derived key
+  // Fetch XP reward dynamically from static curriculum via derived key
   useEffect(() => {
     const key = deriveLessonKey(selectedCategory, groupParam || '');
     if (!key) {
@@ -68,16 +68,17 @@ function LessonPageContent() {
       setAlreadyCompleted(false);
       return;
     }
-    Promise.all([
-      fetchLessonRewardByKey(key).catch(() => null),
-      fetchUserLessonCompletedByKey(key).catch(() => false),
-    ])
-      .then(([xp, done]) => {
-        setXpReward(typeof xp === 'number' ? xp : null);
+
+    // Get XP from static config (synchronous)
+    const xp = fetchLessonRewardByKey(key);
+    setXpReward(xp || null);
+
+    // Check completion status (async)
+    fetchUserLessonCompletedByKey(key)
+      .then((done) => {
         setAlreadyCompleted(!!done);
       })
       .catch(() => {
-        setXpReward(null);
         setAlreadyCompleted(false);
       });
   }, [selectedCategory, groupParam]);
