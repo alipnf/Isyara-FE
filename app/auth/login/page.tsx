@@ -10,7 +10,6 @@ import { PasswordInput } from '@/components/ui/password-input';
 import { GoogleSignInButton } from '@/components/auth/google-signin-button';
 import { AuthLayout, AuthSeparator } from '@/components/auth/auth-layout';
 import { useAuthStore } from '@/stores/authStore';
-import { getIsAdmin } from '@/utils/supabase/admin';
 import { useForm } from 'react-hook-form';
 
 type LoginInputs = {
@@ -57,8 +56,7 @@ function LoginForm() {
         }
       } else {
         setSuccess(true);
-        const isAdmin = await getIsAdmin();
-        router.replace(isAdmin ? '/admin' : '/learn');
+        router.replace('/learn');
       }
     } catch (err) {
       setServerError(

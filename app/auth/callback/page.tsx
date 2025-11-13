@@ -1,9 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, Suspense } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/utils/supabase/client";
-import { getIsAdmin } from "@/utils/supabase/admin";
+import { useEffect, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/utils/supabase/client';
 
 function CallbackInner() {
   const router = useRouter();
@@ -15,12 +14,12 @@ function CallbackInner() {
       } catch {}
       // Clean URL to remove sensitive params
       const url = new URL(window.location.href);
-      url.searchParams.delete("code");
-      url.searchParams.delete("state");
-      window.history.replaceState({}, "", url.toString());
+      url.searchParams.delete('code');
+      url.searchParams.delete('state');
+      window.history.replaceState({}, '', url.toString());
 
-      const isAdmin = await getIsAdmin();
-      router.replace(isAdmin ? "/admin" : "/learn");
+      // Redirect to learn page after successful authentication
+      router.replace('/learn');
     })();
   }, [router]);
 
@@ -38,4 +37,3 @@ export default function AuthCallbackPage() {
     </Suspense>
   );
 }
-
