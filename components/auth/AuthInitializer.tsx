@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabase/client';
-import { getIsAdmin } from '@/utils/supabase/admin';
 
 export function AuthInitializer() {
   const initialize = useAuthStore((state) => state.initialize);
@@ -31,9 +30,8 @@ export function AuthInitializer() {
           const url = new URL(window.location.href);
           url.searchParams.delete('code');
           window.history.replaceState({}, '', url.toString());
-          // Route based on role
-          const isAdmin = await getIsAdmin();
-          router.replace(isAdmin ? '/admin' : '/learn');
+          // Redirect to learn page after successful OAuth
+          router.replace('/learn');
         } catch (e) {
           // Leave as is if exchange fails; user can retry
         }
@@ -41,20 +39,14 @@ export function AuthInitializer() {
     }
   }, [router]);
 
-  // If already authenticated and on root, redirect immediately based on role
+  // If already authenticated and on root, redirect immediately to learn page
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (loading) return;
     const path = typeof window !== 'undefined' ? window.location.pathname : '';
     if (path !== '/') return;
     if (!user) return;
-    (async () => {
-      const isAdmin =
-        (user.user_metadata as any)?.is_admin === true ||
-        (user.user_metadata as any)?.role === 'admin' ||
-        (await getIsAdmin());
-      router.replace(isAdmin ? '/admin' : '/learn');
-    })();
+    router.replace('/learn');
   }, [user, loading, router]);
 
   return null;
