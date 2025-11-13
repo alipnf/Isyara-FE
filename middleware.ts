@@ -40,44 +40,10 @@ export async function middleware(request: NextRequest) {
 
   const isAuthenticated = !!user;
   const isVerified = !!user?.email_confirmed_at;
-  // Determine admin from auth metadata (fast path)
-  let isAdmin =
-    (user?.user_metadata as any)?.is_admin === true ||
-    (user?.user_metadata as any)?.role === 'admin';
-  // Optional: check users table for is_admin if not set in metadata
-  if (isAuthenticated && !isAdmin) {
-    try {
-      const sb = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-        {
-          cookies: {
-            getAll() {
-              return request.cookies.getAll().map((c) => ({
-                name: c.name,
-                value: c.value,
-              }));
-            },
-            setAll(cookiesToSet) {
-              cookiesToSet.forEach(({ name, value, options }) => {
-                res.cookies.set(name, value, options);
-              });
-            },
-          },
-        }
-      );
-      const { data } = await sb
-        .from('users')
-        .select('is_admin')
-        .eq('id', user!.id)
-        .single();
-      if ((data as any)?.is_admin === true) isAdmin = true;
-    } catch {}
-  }
 
   // If user is authenticated and trying to access home page, redirect to /learn
   if (isAuthenticated && isVerified && pathname === '/') {
-    return NextResponse.redirect(new URL(isAdmin ? '/admin' : '/learn', request.url));
+    return NextResponse.redirect(new URL('/learn', request.url));
   }
 
   // Protected paths
@@ -87,7 +53,7 @@ export async function middleware(request: NextRequest) {
     '/leaderboard',
     '/profile',
     '/quiz',
-    '/admin',
+    '/lesson',
   ];
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
 
@@ -104,12 +70,7 @@ export async function middleware(request: NextRequest) {
     (pathname.startsWith('/auth/login') ||
       pathname.startsWith('/auth/register'))
   ) {
-    return NextResponse.redirect(new URL(isAdmin ? '/admin' : '/learn', request.url));
-  }
-
-  // Redirect admin away from /learn to /admin for clarity
-  if (isAuthenticated && isVerified && isAdmin && pathname === '/learn') {
-    return NextResponse.redirect(new URL('/admin', request.url));
+    return NextResponse.redirect(new URL('/learn', request.url));
   }
 
   return res;
