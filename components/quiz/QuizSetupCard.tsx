@@ -116,7 +116,7 @@ export function QuizSetupCard({
                   cameraEnabled ? 'bg-primary text-primary-foreground' : ''
                 }
               >
-                {cameraEnabled ? 'Aktif' : 'Nonaktif'}
+                {cameraEnabled ? 'Nonaktif' : 'Aktif'}
               </Button>
             </CardTitle>
           </CardHeader>

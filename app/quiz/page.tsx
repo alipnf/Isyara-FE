@@ -52,8 +52,22 @@ function QuizPageContent() {
   } = useQuizLogic();
 
   const progressValue = useMemo(() => {
-    return questions.length ? (answeredQuestions / questions.length) * 100 : 0;
-  }, [answeredQuestions, questions.length]);
+    if (!questions.length) return 0;
+
+    // During active quiz, count current question as in progress
+    // This ensures progress reaches 100% when quiz completes
+    if (quizState === 'active') {
+      return ((currentQuestion + 1) / questions.length) * 100;
+    }
+
+    // When completed, show 100%
+    if (quizState === 'completed') {
+      return 100;
+    }
+
+    // Fallback to answered questions count
+    return (answeredQuestions / questions.length) * 100;
+  }, [answeredQuestions, questions.length, quizState, currentQuestion]);
 
   // Fetch dynamic XP reward from static curriculum when opened from /learn with lesson id
   useEffect(() => {

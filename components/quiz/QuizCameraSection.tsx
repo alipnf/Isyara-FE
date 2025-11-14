@@ -67,7 +67,7 @@ export function QuizCameraSection({
                 <CameraOff className="h-4 w-4 mr-0 sm:mr-2" />
               )}
               <span className="hidden sm:inline">
-                {cameraEnabled ? 'Aktif' : 'Nonaktif'}
+                {cameraEnabled ? 'Nonaktif' : 'Aktif'}
               </span>
             </Button>
             <SettingsDialog
