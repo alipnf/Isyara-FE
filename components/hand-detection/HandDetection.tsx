@@ -3,7 +3,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as tf from '@tensorflow/tfjs';
 import { useMediaPipeHands, drawLandmarks } from './MediaPipeHands';
-import { extractFeatures } from './FeatureExtraction';
+import {
+  extractFeatures,
+  extractFeaturesWithDualApproach,
+} from './FeatureExtraction';
 import {
   loadModelWithFallback,
   fetchJSONWithFallback,
@@ -353,24 +356,59 @@ export function HandDetection({
           results.multiHandLandmarks &&
           results.multiHandLandmarks.length
         ) {
-          // Build combined features for up to 2 hands: 126 dims (63x2)
-          const feat = extractFeatures(results.multiHandLandmarks);
-          if (feat && feat.length === 126) {
-            const inferStart = performance.now();
-            const input = tf.tensor(feat, [1, 126], 'float32');
-            const probs = model.predict(input) as tf.Tensor;
-            const pData = probs.dataSync();
-            input.dispose();
-            probs.dispose();
-            const inferMs = performance.now() - inferStart;
+          // Dual prediction approach: try both normal and flipped landmarks
+          const { normal: featNormal, flipped: featFlipped } =
+            extractFeaturesWithDualApproach(results.multiHandLandmarks);
 
-            // Argmax label
-            let bestIdx = 0;
-            for (let j = 1; j < pData.length; j++) {
-              if (pData[j] > pData[bestIdx]) bestIdx = j;
+          if (featNormal && featNormal.length === 126) {
+            const inferStart = performance.now();
+
+            // Prediction 1: Normal landmarks
+            const inputNormal = tf.tensor(featNormal, [1, 126], 'float32');
+            const probsNormal = model.predict(inputNormal) as tf.Tensor;
+            const pDataNormal = probsNormal.dataSync() as Float32Array;
+            inputNormal.dispose();
+            probsNormal.dispose();
+
+            // Prediction 2: Flipped landmarks (if available)
+            let pDataFlipped: Float32Array | null = null;
+            if (featFlipped && featFlipped.length === 126) {
+              const inputFlipped = tf.tensor(featFlipped, [1, 126], 'float32');
+              const probsFlipped = model.predict(inputFlipped) as tf.Tensor;
+              pDataFlipped = probsFlipped.dataSync() as Float32Array;
+              inputFlipped.dispose();
+              probsFlipped.dispose();
             }
 
-            const conf = pData[bestIdx];
+            const inferMs = performance.now() - inferStart;
+
+            // Choose best prediction based on confidence
+            let bestIdx = 0;
+            let conf = 0;
+            let usedMethod = 'normal';
+
+            // Find best from normal prediction
+            for (let j = 1; j < pDataNormal.length; j++) {
+              if (pDataNormal[j] > pDataNormal[bestIdx]) bestIdx = j;
+            }
+            conf = pDataNormal[bestIdx];
+
+            // Check if flipped prediction is better
+            if (pDataFlipped) {
+              let bestIdxFlipped = 0;
+              for (let j = 1; j < pDataFlipped.length; j++) {
+                if (pDataFlipped[j] > pDataFlipped[bestIdxFlipped])
+                  bestIdxFlipped = j;
+              }
+              const confFlipped = pDataFlipped[bestIdxFlipped];
+
+              if (confFlipped > conf) {
+                bestIdx = bestIdxFlipped;
+                conf = confFlipped;
+                usedMethod = 'flipped';
+              }
+            }
+
             const lbl = classes[bestIdx] ?? `${bestIdx}`;
 
             // For UI
@@ -383,7 +421,16 @@ export function HandDetection({
             const expectedIdx = currentExpected
               ? classes.indexOf(currentExpected)
               : -1;
-            const expectedConf = expectedIdx >= 0 ? pData[expectedIdx] : 0;
+
+            // Get expected confidence from the same prediction method that won
+            let expectedConf = 0;
+            if (expectedIdx >= 0) {
+              if (usedMethod === 'flipped' && pDataFlipped) {
+                expectedConf = pDataFlipped[expectedIdx];
+              } else {
+                expectedConf = pDataNormal[expectedIdx];
+              }
+            }
 
             // Validate hand count vs requirement for expected label
             let isHandCountValid = true;

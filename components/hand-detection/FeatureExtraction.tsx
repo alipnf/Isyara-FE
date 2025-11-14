@@ -9,11 +9,42 @@ interface Landmark {
 
 type Coordinate = [number, number, number];
 
-// Extract 126-dim features from up to two hands (matching web implementation)
-// Normalization: relative to wrist + scaled by max 3D distance
-// Returns Float32Array(126) following Python preprocessing
-export function extractFeatures(
-  landmarks: Landmark[] | Landmark[][] | null | undefined
+// Flip landmarks horizontally to handle left/right hand differences
+function flipLandmarksHorizontal(landmarks: Landmark[]): Landmark[] {
+  const flipped = landmarks.map((lm) => ({
+    x: 1.0 - lm.x, // Flip X coordinate
+    y: lm.y,
+    z: lm.z,
+  }));
+
+  // MediaPipe Hand Landmark mapping untuk mirroring
+  // Tukar landmark points yang berpasangan (thumb, fingers, dll)
+  const landmarkPairs = [
+    [2, 3], // Thumb tip connections
+    [5, 17], // Index finger MCP ⟷ Pinky MCP
+    [6, 18], // Index finger PIP ⟷ Pinky PIP
+    [7, 19], // Index finger DIP ⟷ Pinky DIP
+    [8, 20], // Index finger tip ⟷ Pinky tip
+    [9, 13], // Middle finger MCP ⟷ Ring finger MCP
+    [10, 14], // Middle finger PIP ⟷ Ring finger PIP
+    [11, 15], // Middle finger DIP ⟷ Ring finger DIP
+    [12, 16], // Middle finger tip ⟷ Ring finger tip
+  ];
+
+  // Swap landmarks untuk mirroring yang benar
+  for (const [i, j] of landmarkPairs) {
+    const temp = flipped[i];
+    flipped[i] = flipped[j];
+    flipped[j] = temp;
+  }
+
+  return flipped;
+}
+
+// Extract features with optional horizontal flip correction
+function extractFeaturesInternal(
+  landmarks: Landmark[] | Landmark[][] | null | undefined,
+  applyFlipCorrection: boolean = false
 ): Float32Array | null {
   if (!landmarks) return null;
 
@@ -31,8 +62,13 @@ export function extractFeatures(
 
   const features: number[] = [];
 
-  for (const hand of hands) {
+  for (let hand of hands) {
     if (!hand || hand.length !== 21) continue;
+
+    // Apply horizontal flip correction if requested
+    if (applyFlipCorrection) {
+      hand = flipLandmarksHorizontal(hand);
+    }
 
     // Convert to array of [x,y,z]
     const points: Coordinate[] = hand.map(
@@ -73,4 +109,24 @@ export function extractFeatures(
   }
 
   return new Float32Array(features);
+}
+
+// Main extraction function - tries both normal and flipped approaches
+// Returns the features that would give better prediction confidence
+export function extractFeatures(
+  landmarks: Landmark[] | Landmark[][] | null | undefined
+): Float32Array | null {
+  // For now, just use normal extraction (backward compatibility)
+  // The dual prediction will be handled in HandDetection component
+  return extractFeaturesInternal(landmarks, false);
+}
+
+// Dual extraction for better left/right hand handling
+export function extractFeaturesWithDualApproach(
+  landmarks: Landmark[] | Landmark[][] | null | undefined
+): { normal: Float32Array | null; flipped: Float32Array | null } {
+  const normal = extractFeaturesInternal(landmarks, false);
+  const flipped = extractFeaturesInternal(landmarks, true);
+
+  return { normal, flipped };
 }
