@@ -29,5 +29,5 @@
   ],
   "num_classes": 26,
   "input_dim": 126,
-  "test_accuracy": 0.9508599638938904
+  "test_accuracy": 0.9344870448112488
 }
