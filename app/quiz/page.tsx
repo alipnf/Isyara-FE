@@ -15,9 +15,9 @@ import {
 import { useQuizLogic } from '@hooks/useQuizLogic';
 import { useSearchParams } from 'next/navigation';
 import {
-  fetchLessonRewardById,
-  completeLessonById,
-  fetchUserLessonCompletedById,
+  getLessonReward,
+  completeLesson,
+  isLessonCompleted,
 } from '@/utils/supabase/learn';
 import { awardProgress } from '@/utils/supabase/profile';
 
@@ -30,7 +30,6 @@ function QuizPageContent() {
 
   const {
     quizState,
-    selectedCategory,
     currentQuestion,
     timeLeft,
     questions,
@@ -54,32 +53,31 @@ function QuizPageContent() {
   const progressValue = useMemo(() => {
     if (!questions.length) return 0;
 
+    // When completed, always show 100% regardless of other states
+    if (quizState === 'completed') {
+      return 100;
+    }
+
     // During active quiz, count current question as in progress
     // This ensures progress reaches 100% when quiz completes
     if (quizState === 'active') {
       return ((currentQuestion + 1) / questions.length) * 100;
     }
 
-    // When completed, show 100%
-    if (quizState === 'completed') {
-      return 100;
-    }
-
     // Fallback to answered questions count
     return (answeredQuestions / questions.length) * 100;
   }, [answeredQuestions, questions.length, quizState, currentQuestion]);
 
-  // Fetch dynamic XP reward from static curriculum when opened from /learn with lesson id
+  // Fetch dynamic XP reward from static curriculum when opened from /learn with lesson key
   useEffect(() => {
-    const idParam = searchParams.get('id');
-    const id = idParam ? Number(idParam) : NaN;
-    if (!isNaN(id)) {
+    const key = searchParams.get('key');
+    if (key) {
       // Get XP from static config (synchronous)
-      const xp = fetchLessonRewardById(id);
+      const xp = getLessonReward(key);
       setXpReward(xp || null);
 
       // Check completion status (async)
-      fetchUserLessonCompletedById(id)
+      isLessonCompleted(key)
         .then((done) => {
           setAlreadyCompleted(!!done);
         })
@@ -102,17 +100,17 @@ function QuizPageContent() {
 
     completionHandledRef.current = true;
 
-    const idParam = searchParams.get('id');
-    const id = idParam ? Number(idParam) : NaN;
+    const key = searchParams.get('key');
     const xp = typeof xpReward === 'number' ? xpReward : 100;
 
-    if (!isNaN(id) && !alreadyCompleted) {
-      completeLessonById(id).catch(() => {
+    if (key && !alreadyCompleted) {
+      // Complete the lesson using the key-based API
+      completeLesson(key).catch(() => {
         // Fallback: still award XP to avoid losing progress feeling
         awardProgress({ xpDelta: xp, lessonsDelta: 1 }).catch(() => {});
       });
     } else if (!alreadyCompleted) {
-      // No lesson id: fallback local award so user still sees progress
+      // No lesson key: fallback local award so user still sees progress
       awardProgress({ xpDelta: xp, lessonsDelta: 1 }).catch(() => {});
     }
   }, [
@@ -147,7 +145,6 @@ function QuizPageContent() {
       {quizState === 'setup' && (
         <div className="container mx-auto px-4 py-4">
           <QuizSetupCard
-            selectedCategory={selectedCategory}
             cameraEnabled={cameraEnabled}
             onBack={goBack}
             onStartQuiz={startQuiz}
@@ -182,7 +179,6 @@ function QuizPageContent() {
             {/* Right: Question, Stats */}
             <div className="space-y-3 sm:space-y-4">
               <QuizQuestionCard
-                selectedCategory={selectedCategory}
                 currentItem={questions[currentQuestion]?.item || ''}
               />
               <QuizStatsCard

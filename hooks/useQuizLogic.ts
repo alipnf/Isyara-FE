@@ -2,14 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import type { QuizState, CategoryType, QuizQuestion } from '@type/quiz';
+import type { QuizState, QuizQuestion } from '@type/quiz';
 import type { LessonSettings } from '@type/lesson';
-import { categories } from '@components/quiz/quizData';
 
 export function useQuizLogic() {
-  const [quizState, setQuizState] = useState<QuizState>('category');
-  const [selectedCategory, setSelectedCategory] =
-    useState<CategoryType>('letters');
+  const [quizState, setQuizState] = useState<QuizState>('setup');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -33,28 +30,13 @@ export function useQuizLogic() {
 
   const searchParams = useSearchParams();
 
-  useEffect(() => {
-    const cat = searchParams.get('category');
-    const valid = ['letters', 'numbers', 'words'];
-    if (cat && valid.includes(cat)) {
-      setSelectedCategory(cat as CategoryType);
-      setQuizState('setup');
-    } else {
-      setSelectedCategory('letters');
-      setQuizState('setup');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const selectCategory = (category: CategoryType) => {
-    setSelectedCategory(category);
-    setQuizState('setup');
-  };
+  // Quiz sekarang langsung ke setup, tidak perlu pilih kategori lagi
 
   const generateQuiz = () => {
-    const items = categories[selectedCategory].items;
-    const shuffled = [...items].sort(() => Math.random() - 0.5);
-    const selected = shuffled.slice(0, Math.min(10, items.length));
+    // Generate random letters A-Z for quiz
+    const alphabets = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    const shuffled = [...alphabets].sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, Math.min(10, alphabets.length));
     const newQuestions = selected.map((item) => ({
       item,
       answered: false,
@@ -99,9 +81,13 @@ export function useQuizLogic() {
       setIsCorrect(null);
       setConfidence(0);
     } else {
-      setQuizState('completed');
+      // Quiz selesai - pastikan semua state di-reset dengan benar
       setIsDetecting(false);
       setCameraEnabled(false);
+      setUserAnswer(null);
+      setIsCorrect(null);
+      setConfidence(0);
+      setQuizState('completed');
     }
   };
 
@@ -165,7 +151,6 @@ export function useQuizLogic() {
 
   return {
     quizState,
-    selectedCategory,
     currentQuestion,
     timeLeft,
     questions,
@@ -178,7 +163,6 @@ export function useQuizLogic() {
     isCorrect,
     detectionStatus,
     settings,
-    selectCategory,
     startQuiz,
     nextQuestion,
     resetQuiz,

@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, Play, Lock, Zap, Award, BookOpen } from 'lucide-react';
 import { Lesson } from '@type/learn';
@@ -57,13 +56,6 @@ export function LessonCard({ lesson, getLessonRoute }: LessonCardProps) {
             {lesson.title}
           </h4>
 
-          {lesson.type === 'quiz' && (
-            <Badge variant="outline" className="text-[10px] sm:text-xs">
-              <Zap className="h-3 w-3 mr-1" />
-              Kuis
-            </Badge>
-          )}
-
           {lesson.progress > 0 && lesson.progress < 100 && (
             <div className="mt-2 sm:mt-3">
               <Progress value={lesson.progress} className="h-1.5" />
@@ -100,4 +92,3 @@ export function LessonCard({ lesson, getLessonRoute }: LessonCardProps) {
     </Card>
   );
 }
-

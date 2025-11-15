@@ -7,7 +7,7 @@ export function getLessonRoute(lesson: Lesson): string {
   }
 
   if (lesson.type === 'quiz') {
-    return `/quiz?id=${lesson.id}`;
+    return `/quiz?key=${lesson.key}`;
   }
 
   // For lessons with ranges (e.g., A-E)

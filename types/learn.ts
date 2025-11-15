@@ -1,6 +1,7 @@
 // Type definitions for learning components
 export interface BaseLesson {
   id: number;
+  key: string;
   title: string;
   completed: boolean;
   type: 'lesson' | 'quiz';

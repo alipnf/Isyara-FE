@@ -10,11 +10,7 @@ import {
 } from '@/components/ui/card';
 import { HandDetection } from '@/components/hand-detection/HandDetection';
 import { Brain, Camera, CameraOff, Play, ArrowLeft } from 'lucide-react';
-import type { CategoryType } from '@type/quiz';
-import { categories } from './quizData';
-
 interface QuizSetupCardProps {
-  selectedCategory: CategoryType;
   cameraEnabled: boolean;
   onBack: () => void;
   onStartQuiz: () => void;
@@ -25,7 +21,6 @@ interface QuizSetupCardProps {
 }
 
 export function QuizSetupCard({
-  selectedCategory,
   cameraEnabled,
   onBack,
   onStartQuiz,
@@ -50,11 +45,9 @@ export function QuizSetupCard({
           Kembali
         </Button>
         <div>
-          <h3 className="font-semibold">
-            Kuis {categories[selectedCategory].name}
-          </h3>
+          <h3 className="font-semibold">Kuis Huruf</h3>
           <p className="text-sm text-muted-foreground">
-            {categories[selectedCategory].description}
+            Kuis alfabet BISINDO A-Z
           </p>
         </div>
       </div>
@@ -66,9 +59,7 @@ export function QuizSetupCard({
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Brain className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle className="text-2xl">
-              Kuis {categories[selectedCategory].name}
-            </CardTitle>
+            <CardTitle className="text-2xl">Kuis Huruf</CardTitle>
             <CardDescription>
               Uji kemampuan Anda dengan soal acak dalam waktu terbatas
             </CardDescription>
@@ -78,10 +69,7 @@ export function QuizSetupCard({
             <div className="bg-muted/50 rounded-lg p-6 text-left">
               <h3 className="font-semibold mb-4">Aturan Kuis:</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  • {Math.min(10, categories[selectedCategory].items.length)}{' '}
-                  soal acak dari kategori {categories[selectedCategory].name}
-                </li>
+                <li>• 10 soal acak dari alfabet A-Z</li>
                 <li>• Waktu 15 detik per soal</li>
                 <li>• Tunjukkan gerakan tangan sesuai yang diminta</li>
                 <li>• Skor minimum 70% untuk lulus</li>
@@ -95,7 +83,7 @@ export function QuizSetupCard({
               disabled={!cameraEnabled}
             >
               <Play className="h-5 w-5 mr-2" />
-              Mulai Kuis {categories[selectedCategory].name}
+              Mulai Kuis Huruf
             </Button>
           </CardContent>
         </Card>
