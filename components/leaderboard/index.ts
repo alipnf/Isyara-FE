@@ -6,5 +6,4 @@ export { default as StatsCards } from './StatsCards';
 export { default as LeaderboardActions } from './LeaderboardActions';
 
 export * from '@type/leaderboard';
-export * from './leaderboardData';
 export * from './utils';
