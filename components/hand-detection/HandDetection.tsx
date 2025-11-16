@@ -73,6 +73,9 @@ export function HandDetection({
   const [showHoldAlert, setShowHoldAlert] = useState(false);
   const startWaitTimerRef = useRef<NodeJS.Timeout | null>(null);
   const expectedLabelRef = useRef<string>(expectedLabel);
+  const holdDurationRef = useRef<number>(holdDuration);
+  const showLandmarksRef = useRef<boolean>(showLandmarks);
+  const confidenceThresholdRef = useRef<number>(confidenceThreshold);
   const onDetectionRef = useRef<typeof onDetection>(onDetection);
   const onLiveUpdateRef = useRef<typeof onLiveUpdate>(onLiveUpdate);
   const [handReqMessage, setHandReqMessage] = useState<string | null>(null);
@@ -115,6 +118,21 @@ export function HandDetection({
   useEffect(() => {
     onLiveUpdateRef.current = onLiveUpdate;
   }, [onLiveUpdate]);
+
+  // Keep latest holdDuration value
+  useEffect(() => {
+    holdDurationRef.current = holdDuration;
+  }, [holdDuration]);
+
+  // Keep latest showLandmarks value
+  useEffect(() => {
+    showLandmarksRef.current = showLandmarks;
+  }, [showLandmarks]);
+
+  // Keep latest confidenceThreshold value
+  useEffect(() => {
+    confidenceThresholdRef.current = confidenceThreshold;
+  }, [confidenceThreshold]);
 
   // Load TFJS model and classes
   useEffect(() => {
@@ -310,7 +328,7 @@ export function HandDetection({
 
         // Draw hand landmarks if enabled (with mirror + cover mapping)
         if (
-          showLandmarks &&
+          showLandmarksRef.current &&
           results.multiHandLandmarks &&
           results.multiHandLandmarks.length
         ) {
@@ -413,7 +431,7 @@ export function HandDetection({
 
             // For UI
             let bestLabelAny = lbl;
-            let bestConf = conf >= confidenceThreshold ? conf : -1;
+            let bestConf = conf >= confidenceThresholdRef.current ? conf : -1;
             let bestLabel = bestConf >= 0 ? lbl : '';
 
             // Confidence for expected label (if provided)
@@ -484,7 +502,7 @@ export function HandDetection({
               !!currentExpected && bestLabel === currentExpected;
 
             // Hysteresis thresholds: start higher, keep with slightly lower
-            const startThreshold = confidenceThreshold; // e.g., 0.75
+            const startThreshold = confidenceThresholdRef.current; // e.g., 0.75
             const keepThreshold = Math.max(0.5, startThreshold - 0.1); // e.g., 0.65
 
             const canStart =
@@ -507,7 +525,7 @@ export function HandDetection({
                   }
                   detectionTimerRef.current = null;
                   setShowHoldAlert(false);
-                }, holdDuration * 1000);
+                }, holdDurationRef.current * 1000);
 
                 detectionTimerRef.current = {
                   // Tie the timer to the expected label for stability
@@ -537,15 +555,30 @@ export function HandDetection({
             if (inferTimesRef.current.length > 120)
               inferTimesRef.current.shift();
           } else {
+            // No valid features extracted - clear detection state and timer
             setCurrentDetectedLabel(null);
             onLiveUpdateRef.current?.(null, 0);
+            emaConfRef.current = 0; // Reset EMA confidence
+            // Clear any running hold timer since we can't detect the hand
+            if (detectionTimerRef.current?.timerId) {
+              clearTimeout(detectionTimerRef.current.timerId);
+            }
+            detectionTimerRef.current = null;
+            setShowHoldAlert(false);
           }
 
           // Close outer if (model && landmarks)
         } else {
-          // Model not loaded or no landmarks
+          // Model not loaded or no landmarks - clear everything
           setCurrentDetectedLabel(null);
           onLiveUpdateRef.current?.(null, 0);
+          emaConfRef.current = 0; // Reset EMA confidence
+          // Clear any running hold timer since there are no hands detected
+          if (detectionTimerRef.current?.timerId) {
+            clearTimeout(detectionTimerRef.current.timerId);
+          }
+          detectionTimerRef.current = null;
+          setShowHoldAlert(false);
         }
 
         // Record total frame time and update FPS
@@ -647,6 +680,7 @@ export function HandDetection({
     }
     detectionTimerRef.current = null;
     setShowHoldAlert(false);
+    emaConfRef.current = 0; // Reset EMA confidence for new label
   }, [expectedLabel]);
 
   // Stop detection and camera
@@ -660,6 +694,7 @@ export function HandDetection({
 
     setIsRunning(false);
     setCurrentDetectedLabel(null);
+    emaConfRef.current = 0; // Reset EMA confidence
 
     try {
       if (cameraRef.current) {

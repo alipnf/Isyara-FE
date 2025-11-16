@@ -59,6 +59,27 @@ export function SettingsDialog({
             </p>
           </div>
 
+          {/* Confidence Threshold */}
+          <div className="grid gap-2">
+            <Label>Ambang Kecocokan: {settings.confidenceThreshold[0]}%</Label>
+            <Slider
+              value={settings.confidenceThreshold}
+              onValueChange={(value) =>
+                onSettingsChange({
+                  ...settings,
+                  confidenceThreshold: value as [number],
+                })
+              }
+              max={95}
+              min={50}
+              step={5}
+              className="w-full"
+            />
+            <p className="text-xs text-muted-foreground">
+              Persentase kecocokan minimum agar gerakan dianggap benar
+            </p>
+          </div>
+
           {/* Toggle Settings */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -74,24 +95,6 @@ export function SettingsDialog({
                   onSettingsChange({
                     ...settings,
                     showHandLandmarks: checked,
-                  })
-                }
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Audio Feedback</Label>
-                <p className="text-xs text-muted-foreground">
-                  Suara konfirmasi untuk gerakan benar/salah
-                </p>
-              </div>
-              <Switch
-                checked={settings.audioFeedback}
-                onCheckedChange={(checked) =>
-                  onSettingsChange({
-                    ...settings,
-                    audioFeedback: checked,
                   })
                 }
               />

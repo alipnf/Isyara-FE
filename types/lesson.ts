@@ -1,9 +1,9 @@
 // Type definitions for lesson domain
 export interface LessonSettings {
   showHandLandmarks: boolean;
-  audioFeedback: boolean;
   autoAdvance: boolean;
   holdDuration: [number];
+  confidenceThreshold: [number];
   showPerformanceStats: boolean;
 }
 
