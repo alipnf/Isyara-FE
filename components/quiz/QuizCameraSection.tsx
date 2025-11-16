@@ -90,6 +90,7 @@ export function QuizCameraSection({
               onStatusChange={onStatusChange}
               containerClassName="rounded-lg"
               holdDuration={settings.holdDuration[0]}
+              confidenceThreshold={settings.confidenceThreshold[0] / 100}
               expectedLabel={expectedLabel}
             />
           )}

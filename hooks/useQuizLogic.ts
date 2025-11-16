@@ -23,9 +23,9 @@ export function useQuizLogic() {
   const [settings, setSettings] = useState<LessonSettings>({
     showHandLandmarks: true,
     showPerformanceStats: false,
-    audioFeedback: false,
     autoAdvance: true,
     holdDuration: [2],
+    confidenceThreshold: [75],
   });
 
   const searchParams = useSearchParams();

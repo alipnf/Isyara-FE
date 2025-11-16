@@ -30,16 +30,19 @@ export function ReviewCameraSection({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <HandDetection
-          isDetecting={isDetecting}
-          onDetection={onDetection}
-          onLiveUpdate={onLiveUpdate}
-          showLandmarks={true}
-          expectedLabel={currentItem}
-          confidenceThreshold={0.75}
-          holdDuration={2}
-          containerClassName="rounded-lg overflow-hidden"
-        />
+        {/* Camera with proper aspect ratio */}
+        <div className="aspect-video bg-muted rounded-lg relative overflow-hidden">
+          <HandDetection
+            isDetecting={isDetecting}
+            onDetection={onDetection}
+            onLiveUpdate={onLiveUpdate}
+            showLandmarks={true}
+            expectedLabel={currentItem}
+            confidenceThreshold={0.75}
+            holdDuration={2}
+            containerClassName="rounded-lg"
+          />
+        </div>
 
         {/* Confidence Meter */}
         <div>
