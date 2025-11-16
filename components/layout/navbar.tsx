@@ -3,14 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import {
-  GraduationCap,
-  RefreshCcw,
-  Trophy,
-  User,
-  Menu,
-  LogOut,
-} from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
@@ -50,7 +43,6 @@ export function Navbar() {
     {
       name: 'Mulai Belajar',
       href: '/auth/login',
-      icon: GraduationCap,
     },
   ];
 
@@ -59,17 +51,14 @@ export function Navbar() {
     {
       name: 'Belajar',
       href: '/learn',
-      icon: GraduationCap,
     },
     {
       name: 'Review',
       href: '/review',
-      icon: RefreshCcw,
     },
     {
       name: 'Leaderboard',
       href: '/leaderboard',
-      icon: Trophy,
     },
   ];
 
@@ -87,14 +76,13 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-4">
+          <nav className="hidden md:flex items-center">
             {loading ? (
               <div className="flex items-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
               </div>
             ) : (
               navigationItems.map((item) => {
-                const Icon = item.icon;
                 const isActive = pathname === item.href;
                 const isUnauthenticatedButton =
                   !isAuthenticated && item.name === 'Mulai Belajar';
@@ -107,13 +95,11 @@ export function Navbar() {
                           : 'ghost'
                       }
                       className={cn(
-                        'flex items-center space-x-2',
                         isActive || isUnauthenticatedButton
                           ? 'bg-primary text-white'
                           : 'text-foreground'
                       )}
                     >
-                      <Icon className="h-4 w-4" />
                       <span>{item.name}</span>
                     </Button>
                   </Link>
@@ -125,11 +111,7 @@ export function Navbar() {
             {!loading && isAuthenticated && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center space-x-2"
-                  >
-                    <User className="h-4 w-4" />
+                  <Button variant="ghost">
                     <span>
                       {user?.user_metadata?.username ||
                         user?.user_metadata?.name ||
@@ -139,23 +121,17 @@ export function Navbar() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem asChild>
-                    <Link
-                      href="/profile"
-                      className="flex items-center space-x-2"
-                    >
-                      <User className="h-4 w-4" />
+                    <Link href="/profile">
                       <span>Profil</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    className="flex items-center space-x-2"
                     onSelect={(e) => {
                       e.preventDefault();
                       setLogoutOpen(true);
                     }}
                   >
-                    <LogOut className="h-4 w-4" />
                     <span>Keluar</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -181,7 +157,6 @@ export function Navbar() {
                 ) : (
                   <>
                     {navigationItems.map((item) => {
-                      const Icon = item.icon;
                       const isActive = pathname === item.href;
                       const isUnauthenticatedButton =
                         !isAuthenticated && item.name === 'Mulai Belajar';
@@ -190,13 +165,12 @@ export function Navbar() {
                           <Link
                             href={item.href}
                             className={cn(
-                              'w-full flex items-center space-x-2',
+                              'w-full',
                               isActive || isUnauthenticatedButton
                                 ? 'text-primary bg-primary/10'
                                 : 'text-foreground'
                             )}
                           >
-                            <Icon className="h-4 w-4" />
                             <span>{item.name}</span>
                           </Link>
                         </DropdownMenuItem>
@@ -208,22 +182,16 @@ export function Navbar() {
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                          <Link
-                            href="/profile"
-                            className="w-full flex items-center space-x-2"
-                          >
-                            <User className="h-4 w-4" />
+                          <Link href="/profile" className="w-full">
                             <span>Profil</span>
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          className="flex items-center space-x-2"
                           onSelect={(e) => {
                             e.preventDefault();
                             setLogoutOpen(true);
                           }}
                         >
-                          <LogOut className="h-4 w-4" />
                           <span>Keluar</span>
                         </DropdownMenuItem>
                       </>
