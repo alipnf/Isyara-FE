@@ -127,25 +127,13 @@ function LessonPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
-        {/* Top header: Exit + Progress */}
-        <div className="mb-3 sm:mb-4 flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push('/learn')}
-            className="h-6 w-6 p-0"
-            aria-label="Kembali ke belajar"
-          >
-            <X className="h-3 w-3" />
-          </Button>
-          <Progress value={progressValue} className="h-2 sm:h-3 flex-1" />
-        </div>
+    <div className="relative w-full min-h-screen overflow-x-hidden">
+      {/* Background - Solid, no blobs */}
 
-        <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
-          {/* Camera Feed Section */}
-          <div className="lg:col-span-2">
+      <div className="relative z-10 flex flex-col items-center justify-center w-full min-h-screen px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-7xl">
+          <main className="flex flex-col lg:flex-row items-center justify-center gap-8 py-8 md:py-12 lg:py-16">
+            {/* Camera Feed Section */}
             <CameraSection
               cameraEnabled={cameraEnabled}
               isDetecting={isDetecting}
@@ -161,10 +149,8 @@ function LessonPageContent() {
               onLiveUpdate={handleLiveUpdate}
               onStatusChange={handleCameraStatusChange}
             />
-          </div>
 
-          {/* Reference Card (includes pose + grid) - Right side */}
-          <div className="space-y-3 sm:space-y-4">
+            {/* Instruction Panel (Reference Card) */}
             <ReferenceCard
               categoryName={categories[selectedCategory].name}
               selectedItem={selectedItem}
@@ -175,7 +161,7 @@ function LessonPageContent() {
               onPrevious={handlePrevious}
               onNext={handleNext}
             />
-          </div>
+          </main>
         </div>
       </div>
 

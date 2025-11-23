@@ -1,10 +1,9 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { HandDetection } from '@/components/hand-detection/HandDetection';
-import { Camera, CameraOff, CheckCircle, XCircle } from 'lucide-react';
 import { LessonSettings } from '@type/lesson';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { SettingsDialog } from './SettingsDialog';
+import { useRouter } from 'next/navigation';
 
 interface CameraSectionProps {
   cameraEnabled: boolean;
@@ -35,106 +34,108 @@ export function CameraSection({
   onLiveUpdate,
   onStatusChange,
 }: CameraSectionProps) {
+  const router = useRouter();
+
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-1 min-w-0">
-            <span className="text-sm font-medium">Kecocokan Soal</span>
-            <span className="text-sm text-muted-foreground">
-              {Math.round(confidence)}%
-            </span>
-            <Progress
-              value={Math.max(0, Math.min(100, Math.round(confidence)))}
-              className="h-3.5 w-full sm:h-2.5 sm:flex-1 sm:max-w-[240px]"
-            />
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={onToggleCamera}
-              className={
-                cameraEnabled ? 'bg-primary text-primary-foreground' : ' '
-              }
-              aria-label={
-                cameraEnabled ? 'Nonaktifkan kamera' : 'Aktifkan kamera'
-              }
-            >
-              {cameraEnabled ? (
-                <Camera className="h-4 w-4 mr-0 sm:mr-2" />
-              ) : (
-                <CameraOff className="h-4 w-4 mr-0 sm:mr-2" />
-              )}
-              <span className="hidden sm:inline">
-                {cameraEnabled ? 'Aktif' : 'Nonaktif'}
-              </span>
-            </Button>
-            <SettingsDialog
-              settings={settings}
-              onSettingsChange={onSettingsChange}
-            />
-          </div>
+    <div className="w-full max-w-2xl flex flex-col gap-4">
+      {/* Controls: Confidence Bar, Camera Toggle, Settings, Exit */}
+      <div className="flex items-center gap-4 p-4 bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/10 backdrop-blur-xl rounded-xl">
+        <div className="flex-1 flex items-center gap-3">
+          <span className="text-sm font-medium text-gray-900 dark:text-white">
+            Kecocokan
+          </span>
+          <Progress
+            value={Math.max(0, Math.min(100, Math.round(confidence)))}
+            className="h-2.5 flex-1"
+          />
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[3rem] text-right">
+            {Math.round(confidence)}%
+          </span>
         </div>
-      </CardHeader>
-      <CardContent>
-        {/* Hand Detection Component */}
-        <div className="aspect-video bg-muted rounded-lg relative overflow-hidden">
-          {cameraEnabled && (
-            <HandDetection
-              isDetecting={isDetecting}
-              showLandmarks={settings.showHandLandmarks}
-              showPerformanceStats={settings.showPerformanceStats}
-              onDetection={onDetection}
-              onLiveUpdate={onLiveUpdate}
-              onStatusChange={onStatusChange}
-              containerClassName="rounded-lg"
-              holdDuration={settings.holdDuration[0]}
-              confidenceThreshold={settings.confidenceThreshold[0] / 100}
-              expectedLabel={selectedItem}
-            />
-          )}
-
-          {!cameraEnabled && (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <CameraOff className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">Kamera Tidak Aktif</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Aktifkan kamera untuk memulai latihan
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Match Feedback */}
-        {isCorrect !== null && (
-          <div
-            className={`flex items-center justify-center p-3 sm:p-4 rounded-lg mt-3 sm:mt-4 ${
-              isCorrect ? 'bg-green-50' : 'bg-red-50'
-            }`}
+        <div className="flex gap-2">
+          <Button
+            variant={cameraEnabled ? 'default' : 'outline'}
+            size="sm"
+            onClick={onToggleCamera}
+            className="gap-2"
           >
-            {isCorrect ? (
-              <div className="flex items-center gap-2 text-green-700 text-sm sm:text-base">
-                <CheckCircle className="h-5 w-5" />
-                <span className="font-medium">Gerakan Benar</span>
-                <span className="text-sm text-green-600">
-                  ({selectedItem} terdeteksi)
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 text-red-700 text-sm sm:text-base">
-                <XCircle className="h-5 w-5" />
-                <span className="font-medium">Coba Lagi</span>
-                <span className="text-sm text-red-600">
-                  Sesuaikan posisi tangan
-                </span>
-              </div>
-            )}
+            <span className="material-symbols-outlined text-base">
+              {cameraEnabled ? 'videocam' : 'videocam_off'}
+            </span>
+            <span className="hidden sm:inline">
+              {cameraEnabled ? 'Aktif' : 'Nonaktif'}
+            </span>
+          </Button>
+          <SettingsDialog
+            settings={settings}
+            onSettingsChange={onSettingsChange}
+          />
+          <button
+            onClick={() => router.push('/learn')}
+            className="flex items-center justify-center w-9 h-9 rounded-md bg-red-500/10 dark:bg-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-500/20 dark:hover:bg-red-500/30 transition-colors border border-red-500/30"
+            title="Keluar dari Lesson"
+          >
+            <span className="material-symbols-outlined text-base">close</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Camera Feed */}
+      <div className="relative w-full aspect-[4/3] bg-gray-900/50 dark:bg-black/50 rounded-2xl shadow-2xl border border-white/10 backdrop-blur-md overflow-hidden flex items-center justify-center">
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-green-500/10 to-orange-500/10"></div>
+
+        {/* Camera feed or placeholder */}
+        {cameraEnabled ? (
+          <HandDetection
+            isDetecting={isDetecting}
+            showLandmarks={settings.showHandLandmarks}
+            showPerformanceStats={settings.showPerformanceStats}
+            onDetection={onDetection}
+            onLiveUpdate={onLiveUpdate}
+            onStatusChange={onStatusChange}
+            containerClassName="rounded-2xl"
+            holdDuration={settings.holdDuration[0]}
+            confidenceThreshold={settings.confidenceThreshold[0] / 100}
+            expectedLabel={selectedItem}
+          />
+        ) : (
+          <div className="text-center p-8">
+            <span className="material-symbols-outlined text-6xl text-white/50 mb-4">
+              videocam
+            </span>
+            <p className="text-white/70">Umpan Kamera AI akan muncul di sini</p>
           </div>
         )}
-      </CardContent>
-    </Card>
+
+        {/* Correct Feedback Overlay */}
+        {isCorrect === true && (
+          <div className="absolute inset-0 flex items-center justify-center bg-green-500/20 backdrop-blur-sm transition-opacity duration-300">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-24 h-24 flex items-center justify-center bg-green-500/80 rounded-full shadow-glow-green border-4 border-white">
+                <span className="material-symbols-outlined text-6xl text-white">
+                  check
+                </span>
+              </div>
+              <p className="text-2xl font-bold text-white">Benar!</p>
+            </div>
+          </div>
+        )}
+
+        {/* Incorrect Feedback Overlay */}
+        {isCorrect === false && (
+          <div className="absolute inset-0 flex items-center justify-center bg-red-500/20 backdrop-blur-sm transition-opacity duration-300">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-24 h-24 flex items-center justify-center bg-red-500/80 rounded-full shadow-glow-red border-4 border-white">
+                <span className="material-symbols-outlined text-6xl text-white">
+                  close
+                </span>
+              </div>
+              <p className="text-2xl font-bold text-white">Coba Lagi</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
