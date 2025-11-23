@@ -112,15 +112,17 @@ function ReviewPageContent() {
         {/* Active Review State */}
         {reviewState === 'active' && (
           <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
-              <ReviewProgressHeader
-                currentItem={reviewItems[currentItemIndex]?.item}
-                currentIndex={currentItemIndex}
-                totalItems={reviewItems.length}
-                rememberedCount={rememberedCount}
-                showHint={showHint}
-                categoryName={categories[selectedCategory]?.name || selectedCategory}
-                onToggleHint={toggleHint}
-              />
+            <ReviewProgressHeader
+              currentItem={reviewItems[currentItemIndex]?.item}
+              currentIndex={currentItemIndex}
+              totalItems={reviewItems.length}
+              rememberedCount={rememberedCount}
+              showHint={showHint}
+              categoryName={
+                categories[selectedCategory]?.name || selectedCategory
+              }
+              onToggleHint={toggleHint}
+            />
 
             <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
               <ReviewCameraSection

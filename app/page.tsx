@@ -1,136 +1,138 @@
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Camera, Users, Zap } from 'lucide-react';
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 
 export default function Home() {
-  const features = [
-    {
-      key: 'realtime',
-      Icon: Camera,
-      title: 'Deteksi Real-time',
-      desc: 'Teknologi AI mendeteksi gerakan tangan Anda secara langsung dengan akurasi tinggi menggunakan kamera perangkat.',
-    },
-    {
-      key: 'feedback',
-      Icon: Zap,
-      title: 'Umpan Balik Instan',
-      desc: 'Dapatkan respon langsung apakah gerakan tangan Anda sudah benar dengan indikator visual yang jelas dan mudah dipahami.',
-    },
-    {
-      key: 'leaderboard',
-      Icon: Users,
-      title: 'Leaderboard XP',
-      desc: 'Kumpulkan XP dari belajar dan kuis, naikkan peringkat Anda, dan lihat posisi Anda di antara pengguna lain.',
-    },
-  ] as const;
-
-  const faqs = [
-    {
-      q: 'Apakah kamera saya aman?',
-      a: 'Semua pemrosesan dilakukan secara lokal di perangkat Anda. Tidak ada data gambar yang dikirim ke server.',
-    },
-    {
-      q: 'Perangkat apa yang didukung?',
-      a: 'Browser modern di desktop dan mobile yang mendukung akses kamera (Chrome, Edge, Safari terbaru).',
-    },
-    {
-      q: 'Apakah ISYARA gratis?',
-      a: 'Fitur inti belajar dan kuis gratis. Fitur lanjutan akan diumumkan kemudian.',
-    },
-    {
-      q: 'Apakah cocok untuk pemula?',
-      a: 'Ya. Materi disusun bertahap dari dasar (A–Z) dengan latihan praktis dan umpan balik instan, sehingga pemula bisa mengikuti dengan nyaman.',
-    },
-  ] as const;
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto text-center max-w-4xl">
-          <h2 className="text-4xl md:text-6xl font-bold text-balance mb-6">
-            Belajar{' '}
-            <span className="text-primary">Bahasa Isyarat Indonesia</span>{' '}
-            dengan Sistem Pembelajaran Bertahap
-          </h2>
-          <p className="text-xl text-muted-foreground text-balance mb-8 leading-relaxed">
-            ISYARA menghadirkan pembelajaran bertahap dengan gamifikasi,
-            pencatatan progres, dan deteksi tangan real-time untuk pengalaman
-            belajar BISINDO yang menyenangkan dan efektif.
-          </p>
-        </div>
-      </section>
+    <div className="relative w-full min-h-screen overflow-x-hidden">
+      {/* Background Blobs */}
+      {/* Background Blobs Removed */}
 
-      {/* Features Section */}
-      <section className="py-16 px-4 bg-muted/30">
-        <div className="container mx-auto max-w-6xl">
-          <h3 className="text-3xl font-bold text-center mb-12">
-            Fitur Unggulan
-          </h3>
-          <div className="grid md:grid-cols-3 gap-8">
-            {features.map(({ key, Icon, title, desc }) => (
-              <div key={key} className="group">
-                <Card className="h-full flex flex-col bg-muted/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-border transition-all duration-300 group-hover:shadow-2xl group-hover:scale-105 text-center">
-                  <CardHeader>
-                    <div
-                      className={`w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4`}
+      <div className="relative z-10 flex flex-col items-center w-full px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-5xl">
+          <main className="flex flex-col gap-20 sm:gap-24 md:gap-32 py-20 sm:py-24 md:py-32">
+            {/* Hero Section */}
+            <section className="text-center">
+              <div className="flex flex-col items-center gap-6">
+                <h1 className="text-4xl font-black leading-tight tracking-tighter sm:text-5xl md:text-6xl text-gray-900 dark:text-white">
+                  Belajar Bahasa Isyarat Indonesia dengan AI
+                </h1>
+                <p className="max-w-2xl text-base sm:text-lg text-gray-600 dark:text-gray-400">
+                  Jadikan belajar Bahasa Isyarat Indonesia mudah dan
+                  menyenangkan dengan pelacakan tangan AI real-time kami.
+                </p>
+                <button className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-wide shadow-lg shadow-primary/40 hover:shadow-glow-primary transition-all duration-300">
+                  <span className="truncate">Mulai Belajar</span>
+                </button>
+              </div>
+            </section>
+
+            {/* Features Section */}
+            <section>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="flex flex-1 flex-col gap-4 rounded-xl p-6 bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/10 shadow-lg backdrop-blur-xl">
+                  <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-primary/20 text-primary">
+                    <span className="material-symbols-outlined text-3xl">
+                      photo_camera
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                      Deteksi Real-time
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Gunakan kamera perangkat Anda untuk pelacakan tangan dan
+                      pengenalan gerakan secara langsung.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-1 flex-col gap-4 rounded-xl p-6 bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/10 shadow-lg backdrop-blur-xl">
+                  <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-primary/20 text-primary">
+                    <span className="material-symbols-outlined text-3xl">
+                      bolt
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                      Umpan Balik Instan
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      AI cerdas kami memberikan koreksi langsung untuk membantu
+                      Anda belajar lebih cepat.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-1 flex-col gap-4 rounded-xl p-6 bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/10 shadow-lg backdrop-blur-xl">
+                  <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-primary/20 text-primary">
+                    <span className="material-symbols-outlined text-3xl">
+                      emoji_events
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                      Pembelajaran Gamifikasi
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Dapatkan poin, buka level baru, dan ambil tantangan untuk
+                      tetap termotivasi.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* FAQ Section */}
+            <section className="flex flex-col items-center gap-8">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+                  Pertanyaan yang Sering Diajukan
+                </h2>
+                <p className="mt-3 text-gray-600 dark:text-gray-400">
+                  Tidak menemukan jawaban yang Anda cari? Hubungi tim kami.
+                </p>
+              </div>
+              <div className="w-full max-w-3xl flex flex-col">
+                <Accordion type="single" collapsible className="w-full">
+                  {[
+                    {
+                      q: 'Apakah kamera saya aman?',
+                      a: 'Semua pemrosesan dilakukan secara lokal di perangkat Anda. Tidak ada data gambar yang dikirim ke server.',
+                    },
+                    {
+                      q: 'Perangkat apa yang didukung?',
+                      a: 'Browser modern di desktop dan mobile yang mendukung akses kamera (Chrome, Edge, Safari terbaru).',
+                    },
+                    {
+                      q: 'Apakah ISYARA gratis?',
+                      a: 'Fitur inti belajar dan kuis gratis. Fitur lanjutan akan diumumkan kemudian.',
+                    },
+                    {
+                      q: 'Apakah cocok untuk pemula?',
+                      a: 'Ya. Materi disusun bertahap dari dasar (A–Z) dengan latihan praktis dan umpan balik instan, sehingga pemula bisa mengikuti dengan nyaman.',
+                    },
+                  ].map((faq, index) => (
+                    <AccordionItem
+                      key={index}
+                      value={`item-${index + 1}`}
+                      className="border-b border-gray-200 dark:border-white/10"
                     >
-                      <Icon className={`h-6 w-6 text-primary`} />
-                    </div>
-                    <CardTitle>{title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="leading-relaxed">
-                      {desc}
-                    </CardDescription>
-                  </CardContent>
-                </Card>
+                      <AccordionTrigger className="text-base font-medium text-gray-800 dark:text-gray-200 hover:no-underline py-4">
+                        {faq.q}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-sm text-gray-600 dark:text-gray-400 pb-4">
+                        {faq.a}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
               </div>
-            ))}
-          </div>
+            </section>
+          </main>
         </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto max-w-4xl">
-          <h3 className="text-3xl font-bold text-center mb-12">FAQ</h3>
-          <div className="space-y-4">
-            {faqs.map((item, idx) => (
-              <div
-                key={idx}
-                className="rounded-xl border border-border bg-card/50 backdrop-blur transition-all duration-300 hover:shadow-md"
-              >
-                <input
-                  id={`faq-${idx}`}
-                  type="checkbox"
-                  className="peer hidden"
-                />
-                <label
-                  htmlFor={`faq-${idx}`}
-                  className="flex cursor-pointer items-center justify-between gap-4 px-5 py-4"
-                >
-                  <span className="font-medium">{item.q}</span>
-                  <span className="text-muted-foreground transition-transform duration-300 peer-checked:rotate-180">
-                    ▾
-                  </span>
-                </label>
-                <label
-                  htmlFor={`faq-${idx}`}
-                  className="block px-5 pb-4 pt-0 text-sm text-muted-foreground leading-relaxed hidden peer-checked:block"
-                >
-                  {item.a}
-                </label>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      </div>
     </div>
   );
 }
