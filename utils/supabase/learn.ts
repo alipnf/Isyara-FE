@@ -130,6 +130,65 @@ export async function buildUnitsWithProgress(): Promise<LearningUnitType[]> {
 }
 
 /**
+ * Build static learning units without user progress (fallback/offline mode)
+ */
+export function buildStaticUnits(): LearningUnitType[] {
+  // Build units from static definitions
+  const units = UNITS.map((unitMeta) => {
+    const lessons = getLessonsByUnit(unitMeta.id).map((lessonDef, idx) => {
+      // Generate a numeric ID based on unit and order for compatibility
+      const numericId = unitMeta.id * 100 + idx;
+
+      return {
+        id: numericId,
+        key: lessonDef.key,
+        title: lessonDef.title,
+        type: lessonDef.type,
+        completed: false,
+        progress: 0,
+        locked: false, // Will be computed below
+        current: false, // Will be computed below
+        ...lessonDef.payload,
+      } as Lesson & { key: string };
+    });
+
+    return {
+      id: unitMeta.id,
+      title: unitMeta.title,
+      description: unitMeta.description,
+      color: unitMeta.color,
+      lessons,
+      progress: 0,
+    } as LearningUnitType;
+  });
+
+  // Apply locking rules (default: lock everything except first lesson of first unit)
+  for (let i = 0; i < units.length; i++) {
+    const unit = units[i];
+
+    // Lock whole unit if it's not the first one
+    const unitLocked = i > 0;
+    if (unitLocked) {
+      (unit as any).locked = true;
+      unit.lessons = unit.lessons.map((ls) => ({ ...ls, locked: true }));
+      continue;
+    }
+
+    // Within first unit: lock all except first lesson
+    unit.lessons = unit.lessons.map((ls, idx) => {
+      return { ...ls, locked: idx > 0 } as Lesson;
+    });
+
+    // Mark first lesson as current
+    if (unit.lessons.length > 0) {
+      unit.lessons[0].current = true;
+    }
+  }
+
+  return units;
+}
+
+/**
  * Complete a lesson and award XP
  * @param lessonKey - The lesson key (e.g., 'huruf_a_e')
  */

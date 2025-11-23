@@ -7,8 +7,10 @@ import {
   getLessonRoute,
 } from '@/components/learn';
 import type { LearningUnit as LearningUnitType } from '@type/learn';
-import { buildUnitsWithProgress } from '@/utils/supabase/learn';
-import { learningUnits as mockUnits } from '@/components/learn';
+import {
+  buildUnitsWithProgress,
+  buildStaticUnits,
+} from '@/utils/supabase/learn';
 import { getMyUser } from '@/utils/supabase/profile';
 import { Spinner } from '@/components/ui/spinner';
 
@@ -33,16 +35,16 @@ export default function LearnPage() {
           // Load units from static curriculum + user progress
           const built = await buildUnitsWithProgress();
           if (!mounted) return;
-          setUnits(built.length ? built : mockUnits);
+          setUnits(built.length ? built : buildStaticUnits());
         } catch (_e) {
           // If schema not ready, fallback to mock
-          setUnits(mockUnits);
+          setUnits(buildStaticUnits());
         }
       } catch (e: any) {
         if (!mounted) return;
         setError(e?.message || 'Gagal memuat data belajar');
         // Fallback to mock for UI continuity
-        setUnits(mockUnits);
+        setUnits(buildStaticUnits());
       } finally {
         if (mounted) setLoading(false);
       }
