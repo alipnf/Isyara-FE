@@ -13,13 +13,23 @@ export type ReviewBuildResult = {
 };
 
 export async function fetchCategoryProgress(): Promise<
-  Partial<Record<ReviewCategoryKey, { total: number; completed: number; progress: number; unlocked: boolean }>>
+  Partial<
+    Record<
+      ReviewCategoryKey,
+      { total: number; completed: number; progress: number; unlocked: boolean }
+    >
+  >
 > {
   const { data, error } = await supabase.rpc('get_category_progress');
   if (error) throw error;
-  const out: Partial<Record<ReviewCategoryKey, { total: number; completed: number; progress: number; unlocked: boolean }>> = {};
-  for (const row of ((data as any[]) || [])) {
-    const key = (row.category as string) as ReviewCategoryKey;
+  const out: Partial<
+    Record<
+      ReviewCategoryKey,
+      { total: number; completed: number; progress: number; unlocked: boolean }
+    >
+  > = {};
+  for (const row of (data as any[]) || []) {
+    const key = row.category as string as ReviewCategoryKey;
     if (key === 'huruf' || key === 'angka' || key === 'kata') {
       out[key] = {
         total: Number(row.total ?? 0),
@@ -115,7 +125,10 @@ export async function buildReviewData(): Promise<ReviewBuildResult> {
     (Object.keys(categories) as ReviewCategoryKey[]).forEach((k) => {
       const sp = server[k];
       if (sp) {
-        categoryStatus[k] = { unlocked: sp.unlocked, progress: sp.progress } as CategoryStatus;
+        categoryStatus[k] = {
+          unlocked: sp.unlocked,
+          progress: sp.progress,
+        } as CategoryStatus;
       }
     });
   } catch {
@@ -123,7 +136,10 @@ export async function buildReviewData(): Promise<ReviewBuildResult> {
       const total = statusCounters[k].total || 0;
       const completed = statusCounters[k].completed || 0;
       const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
-      categoryStatus[k] = { unlocked: progress >= 100, progress } as CategoryStatus;
+      categoryStatus[k] = {
+        unlocked: progress >= 100,
+        progress,
+      } as CategoryStatus;
     });
   }
 
