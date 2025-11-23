@@ -58,28 +58,34 @@ export default function LearnPage() {
   const userStats = useMemo(() => ({ xp, level }), [xp, level]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
-      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-4xl">
-        {loading ? (
-          <div className="flex items-center gap-3 text-muted-foreground mb-6">
-            <Spinner className="h-4 w-4" /> Memuat data...
-          </div>
-        ) : error ? (
-          <div className="text-sm text-destructive mb-4">{error}</div>
-        ) : (
-          <UserStatsHeader stats={userStats} />
-        )}
+    <div className="relative w-full min-h-screen overflow-x-hidden">
+      {/* Background Blobs Removed */}
 
-        {/* Learning Path */}
-        <div className="space-y-6 sm:space-y-8">
-          {units.map((unit, unitIndex) => (
-            <LearningUnit
-              key={unit.id}
-              unit={unit}
-              unitIndex={unitIndex}
-              getLessonRoute={getLessonRoute}
-            />
-          ))}
+      <div className="relative z-10 flex flex-col items-center w-full px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-5xl">
+          <main className="py-12">
+            {loading ? (
+              <div className="flex items-center gap-3 text-muted-foreground mb-6">
+                <Spinner className="h-4 w-4" /> Memuat data...
+              </div>
+            ) : error ? (
+              <div className="text-sm text-destructive mb-4">{error}</div>
+            ) : (
+              <UserStatsHeader stats={userStats} />
+            )}
+
+            {/* Learning Path */}
+            <div className="flex flex-col gap-8">
+              {units.map((unit, unitIndex) => (
+                <LearningUnit
+                  key={unit.id}
+                  unit={unit}
+                  unitIndex={unitIndex}
+                  getLessonRoute={getLessonRoute}
+                />
+              ))}
+            </div>
+          </main>
         </div>
       </div>
     </div>
