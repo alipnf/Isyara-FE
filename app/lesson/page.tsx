@@ -132,7 +132,7 @@ function LessonPageContent() {
 
       <div className="relative z-10 flex flex-col items-center justify-center w-full min-h-screen px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-7xl">
-          <main className="flex flex-col lg:flex-row items-center justify-center gap-8 py-8 md:py-12 lg:py-16">
+          <main className="flex flex-col lg:flex-row items-center justify-center gap-8 py-4 lg:py-8">
             {/* Camera Feed Section */}
             <CameraSection
               cameraEnabled={cameraEnabled}

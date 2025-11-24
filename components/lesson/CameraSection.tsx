@@ -81,7 +81,7 @@ export function CameraSection({
       </div>
 
       {/* Camera Feed */}
-      <div className="relative w-full aspect-[4/3] bg-gray-900/50 dark:bg-black/50 rounded-2xl shadow-2xl border border-white/10 backdrop-blur-md overflow-hidden flex items-center justify-center">
+      <div className="relative w-full aspect-video bg-gray-900/50 dark:bg-black/50 rounded-2xl shadow-2xl border border-white/10 backdrop-blur-md overflow-hidden flex items-center justify-center">
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-green-500/10 to-orange-500/10"></div>
 
