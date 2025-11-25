@@ -7,6 +7,7 @@ import type {
   CategoryData,
 } from '@type/review';
 import { buildReviewData } from '@/utils/supabase/review';
+import { useLayoutStore } from '@/stores/layoutStore';
 
 export function useReviewLogic(initialCategory: CategoryType) {
   const [reviewState, setReviewState] = useState<ReviewState>('category');
@@ -29,6 +30,7 @@ export function useReviewLogic(initialCategory: CategoryType) {
   const [perLessonProgress, setPerLessonProgress] = useState<{
     lessons: Record<string, { completed: boolean; progress: number }>;
   }>({ lessons: {} });
+  const { setNavbarHidden } = useLayoutStore();
 
   useEffect(() => {
     let mounted = true;
@@ -53,8 +55,17 @@ export function useReviewLogic(initialCategory: CategoryType) {
     load();
     return () => {
       mounted = false;
+      setNavbarHidden(false);
     };
-  }, []);
+  }, [setNavbarHidden]);
+
+  useEffect(() => {
+    if (reviewState === 'category') {
+      setNavbarHidden(false);
+    } else {
+      setNavbarHidden(true);
+    }
+  }, [reviewState, setNavbarHidden]);
 
   const selectCategory = (category: CategoryType) => {
     setSelectedCategory(category);

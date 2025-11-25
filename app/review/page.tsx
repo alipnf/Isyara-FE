@@ -6,9 +6,8 @@ import {
   CategorySelectionCard,
   LockedCategoryCard,
   ReviewSetupCard,
-  ReviewProgressHeader,
   ReviewCameraSection,
-  ReviewHintSection,
+  ReviewControlPanel,
   ReviewCompletedCard,
   CategoryType,
 } from '@/components/review';
@@ -55,9 +54,9 @@ function ReviewPageContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        {/* Category Selection State */}
-        {reviewState === 'category' && !showLocked && (
+      {/* Category Selection State */}
+      {reviewState === 'category' && !showLocked && (
+        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold mb-4">Pilih Kategori</h2>
@@ -85,46 +84,43 @@ function ReviewPageContent() {
               })}
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Locked Category State */}
-        {showLocked && categories[selectedCategory] ? (
+      {/* Locked Category State */}
+      {showLocked && categories[selectedCategory] ? (
+        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
           <LockedCategoryCard
             category={categories[selectedCategory]!}
             categoryName={selectedCategory}
             userProgress={perLessonProgress as any}
             onBack={() => setShowLocked(false)}
           />
-        ) : null}
+        </div>
+      ) : null}
 
-        {/* Setup State */}
-        {reviewState === 'setup' && (
-          <ReviewSetupCard
-            category={categories[selectedCategory]!}
-            cameraEnabled={cameraEnabled}
-            onToggleCamera={toggleCamera}
-            onStart={startReview}
-            onBack={() => setReviewState('category')}
-            onCameraError={handleCameraError}
-          />
-        )}
-
-        {/* Active Review State */}
-        {reviewState === 'active' && (
-          <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
-            <ReviewProgressHeader
-              currentItem={reviewItems[currentItemIndex]?.item}
-              currentIndex={currentItemIndex}
-              totalItems={reviewItems.length}
-              rememberedCount={rememberedCount}
-              showHint={showHint}
-              categoryName={
-                categories[selectedCategory]?.name || selectedCategory
-              }
-              onToggleHint={toggleHint}
+      {/* Setup State */}
+      {reviewState === 'setup' && (
+        <div className="relative z-10 flex flex-col items-center justify-center w-full min-h-screen px-4 sm:px-6 lg:px-8">
+          <div className="w-full max-w-5xl">
+            <ReviewSetupCard
+              category={categories[selectedCategory]!}
+              cameraEnabled={cameraEnabled}
+              onToggleCamera={toggleCamera}
+              onStart={startReview}
+              onBack={() => setReviewState('category')}
+              onCameraError={handleCameraError}
             />
+          </div>
+        </div>
+      )}
 
-            <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
+      {/* Active Review State */}
+      {reviewState === 'active' && (
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 min-h-screen flex items-center justify-center">
+          <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 items-stretch w-full">
+            {/* Left: Camera (wider) */}
+            <div className="lg:col-span-2">
               <ReviewCameraSection
                 isDetecting={isDetecting}
                 currentItem={reviewItems[currentItemIndex]?.item}
@@ -132,27 +128,38 @@ function ReviewPageContent() {
                 onDetection={handleDetection}
                 onLiveUpdate={handleLiveUpdate}
                 onSkip={skipItem}
+                onExit={() => setReviewState('category')}
               />
+            </div>
 
-              <ReviewHintSection
+            {/* Right: Control Panel */}
+            <div className="flex flex-col gap-4 h-full min-h-0">
+              <ReviewControlPanel
                 showHint={showHint}
                 currentItem={reviewItems[currentItemIndex]?.item}
                 selectedCategory={selectedCategory}
+                currentIndex={currentItemIndex}
+                totalItems={reviewItems.length}
+                rememberedCount={rememberedCount}
+                accuracy={accuracy}
+                onToggleHint={toggleHint}
               />
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Completed State */}
-        {reviewState === 'completed' && (
+      {/* Completed State */}
+      {reviewState === 'completed' && (
+        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
           <ReviewCompletedCard
             reviewItems={reviewItems}
             rememberedCount={rememberedCount}
             accuracy={accuracy}
             onReset={resetReview}
           />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

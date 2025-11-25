@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Eye } from 'lucide-react';
+
 import { CategoryType } from '@type/review';
 
 interface ReviewHintSectionProps {
@@ -14,14 +14,17 @@ export function ReviewHintSection({
   selectedCategory,
 }: ReviewHintSectionProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{showHint ? 'Referensi Gerakan' : 'Instruksi'}</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className="flex flex-col gap-4 p-6 bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/10 shadow-lg backdrop-blur-xl rounded-2xl h-full min-h-0">
+      <div className="flex items-center justify-between">
+        <h2 className="text-base font-semibold text-foreground">
+          {showHint ? 'Referensi Gerakan' : 'Instruksi'}
+        </h2>
+      </div>
+
+      <div className="flex-1 min-h-0 overflow-y-auto">
         {showHint ? (
-          <div className="space-y-4">
-            <div className="relative aspect-square bg-muted rounded-lg overflow-hidden">
+          <div className="space-y-4 h-full flex flex-col">
+            <div className="relative aspect-square bg-muted rounded-lg overflow-hidden shrink-0">
               <img
                 src={`/hand/${currentItem}/body dot (1).jpg`}
                 alt={`Gerakan ${currentItem}`}
@@ -39,9 +42,9 @@ export function ReviewHintSection({
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
-            <div className="text-center py-8">
-              <div className="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="space-y-6 h-full flex flex-col justify-center">
+            <div className="text-center py-4">
+              <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 ring-4 ring-primary/5">
                 <span className="text-5xl font-bold text-primary">
                   {currentItem}
                 </span>
@@ -58,7 +61,7 @@ export function ReviewHintSection({
             </div>
 
             <div className="space-y-3">
-              <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-start gap-3 p-3 bg-white/30 dark:bg-white/5 rounded-lg border border-white/20 dark:border-white/5">
                 <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium">Posisi Jelas</p>
@@ -67,7 +70,7 @@ export function ReviewHintSection({
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-start gap-3 p-3 bg-white/30 dark:bg-white/5 rounded-lg border border-white/20 dark:border-white/5">
                 <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium">Tahan 2 Detik</p>
@@ -76,7 +79,7 @@ export function ReviewHintSection({
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-start gap-3 p-3 bg-white/30 dark:bg-white/5 rounded-lg border border-white/20 dark:border-white/5">
                 <Eye className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium">Lupa Gerakannya?</p>
@@ -88,7 +91,7 @@ export function ReviewHintSection({
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
