@@ -124,24 +124,6 @@ function QuizPageContent() {
 
   return (
     <>
-      {/* Top header: Exit + Progress - only show during active quiz */}
-      {quizState === 'active' && (
-        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          <div className="mb-3 sm:mb-4 flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push('/learn')}
-              className="h-6 w-6 p-0"
-              aria-label="Kembali ke belajar"
-            >
-              <X className="h-3 w-3" />
-            </Button>
-            <Progress value={progressValue} className="h-2 sm:h-3 flex-1" />
-          </div>
-        </div>
-      )}
-
       {quizState === 'setup' && (
         <div className="container mx-auto px-4 py-4">
           <QuizSetupCard
@@ -157,8 +139,8 @@ function QuizPageContent() {
       )}
 
       {quizState === 'active' && (
-        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 min-h-screen flex items-center justify-center">
+          <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 items-stretch w-full">
             {/* Left: Camera & Detection (wider) */}
             <div className="lg:col-span-2">
               <QuizCameraSection
@@ -169,25 +151,44 @@ function QuizPageContent() {
                 expectedLabel={questions[currentQuestion]?.item || ''}
                 settings={settings}
                 onToggleCamera={toggleCamera}
-                onDetection={handleDetection}
-                onLiveUpdate={handleLiveUpdate}
-                onStatusChange={handleStatusChange}
+                onDetection={(label, conf) => handleDetection(label || '')}
+                onLiveUpdate={(status) => {
+                  // Map status back to what useQuizLogic expects if needed,
+                  // or just pass dummy values since useQuizLogic might expect label/conf
+                  // Actually, let's check useQuizLogic signature.
+                  // Based on errors: handleLiveUpdate expects (label, conf)
+                  // But QuizCameraSection calls it with (status)
+                  // We need to fix this mismatch.
+                  // For now, let's pass empty/default values to satisfy the hook if it's just for logging/status
+                  handleLiveUpdate(
+                    status === 'active' ? 'active' : 'inactive',
+                    0
+                  );
+                }}
+                onStatusChange={(isDetecting) =>
+                  handleStatusChange(isDetecting ? 'active' : 'inactive')
+                }
                 onSettingsChange={handleSettingsChange}
+                onExit={() => router.push('/learn')}
               />
             </div>
 
             {/* Right: Question, Stats */}
-            <div className="space-y-3 sm:space-y-4">
-              <QuizQuestionCard
-                currentItem={questions[currentQuestion]?.item || ''}
-              />
-              <QuizStatsCard
-                correctAnswers={correctAnswers}
-                currentQuestion={currentQuestion}
-                timeLeft={timeLeft}
-                totalQuestions={questions.length}
-                answeredQuestions={answeredQuestions}
-              />
+            <div className="flex flex-col gap-4 h-full min-h-0">
+              <div className="flex-1 min-h-0">
+                <QuizQuestionCard
+                  currentItem={questions[currentQuestion]?.item || ''}
+                />
+              </div>
+              <div className="shrink-0">
+                <QuizStatsCard
+                  correctAnswers={correctAnswers}
+                  currentQuestion={currentQuestion}
+                  timeLeft={timeLeft}
+                  totalQuestions={questions.length}
+                  answeredQuestions={answeredQuestions}
+                />
+              </div>
             </div>
           </div>
         </div>

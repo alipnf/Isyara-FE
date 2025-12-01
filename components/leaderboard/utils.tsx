@@ -27,4 +27,3 @@ export const getRankColor = (rank: number) => {
       return '';
   }
 };
-

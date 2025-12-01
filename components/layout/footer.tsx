@@ -4,45 +4,39 @@ import { Github, Linkedin, Instagram } from 'lucide-react';
 export function Footer() {
   const currentYear = new Date().getFullYear();
   return (
-    <footer className="bg-background border-t border-border mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-          {/* Copyright */}
-          <div className="text-sm text-muted-foreground">
-            © {currentYear}{' '}
-            <span className="font-medium text-foreground">alipnf</span>
-          </div>
-
-          {/* Social Links */}
-          <div className="flex items-center space-x-4">
+    <footer className="w-full border-t border-gray-200/50 dark:border-white/10 mt-16 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Hak Cipta: {currentYear} alipnf
+          </p>
+          <div className="flex items-center gap-4">
             <Link
               href="https://github.com/alipnf"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
               aria-label="GitHub"
             >
-              <Github className="h-5 w-5" />
+              <Github className="h-6 w-6" />
             </Link>
-
             <Link
               href="https://linkedin.com/in/alipnf"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
               aria-label="LinkedIn"
             >
-              <Linkedin className="h-5 w-5" />
+              <Linkedin className="h-6 w-6" />
             </Link>
-
             <Link
               href="https://instagram.com/_alipnf"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white transition-colors"
               aria-label="Instagram"
             >
-              <Instagram className="h-5 w-5" />
+              <Instagram className="h-6 w-6" />
             </Link>
           </div>
         </div>

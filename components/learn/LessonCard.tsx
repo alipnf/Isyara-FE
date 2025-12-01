@@ -1,8 +1,4 @@
 import Link from 'next/link';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { CheckCircle, Play, Lock, Zap, Award, BookOpen } from 'lucide-react';
 import { Lesson } from '@type/learn';
 
 interface LessonCardProps {
@@ -11,84 +7,80 @@ interface LessonCardProps {
 }
 
 export function LessonCard({ lesson, getLessonRoute }: LessonCardProps) {
-  return (
-    <Card
-      className={`relative transition-all duration-300 ${!lesson.locked ? 'hover:scale-105' : ''} cursor-pointer ${
-        lesson.completed
-          ? 'bg-secondary/10 border-secondary shadow-lg'
-          : lesson.current
-            ? 'bg-primary/10 border-primary shadow-lg animate-pulse-glow'
-            : lesson.locked
-              ? 'bg-muted/50 border-muted opacity-80 cursor-not-allowed'
-              : 'bg-card hover:shadow-lg'
-      }`}
-    >
-      <Link
-        href={getLessonRoute(lesson)}
-        className={lesson.locked ? 'pointer-events-none' : ''}
+  // Determine card styling based on lesson status
+  const getCardStyle = () => {
+    if (lesson.completed) {
+      return 'bg-gradient-to-br from-green-500 to-teal-600';
+    }
+    if (lesson.current) {
+      return 'bg-gradient-to-br from-blue-500 to-indigo-600 transform scale-105 ring-4 ring-blue-400/50 dark:ring-blue-600/50';
+    }
+    if (lesson.locked) {
+      return 'bg-gray-300/50 dark:bg-white/10 backdrop-blur-sm border border-gray-300 dark:border-white/10 opacity-70';
+    }
+    return 'bg-gradient-to-br from-gray-400 to-gray-500';
+  };
+
+  const getIconName = () => {
+    if (lesson.completed) return 'check_circle';
+    if (lesson.current) return 'play_circle';
+    if (lesson.locked) return 'lock';
+    return 'book';
+  };
+
+  const getStatusText = () => {
+    if (lesson.completed) return 'Selesai';
+    if (lesson.current) return 'Mulai';
+    if (lesson.locked) return 'Terkunci';
+    return 'Tersedia';
+  };
+
+  const getStatusColor = () => {
+    if (lesson.completed)
+      return 'text-green-600 dark:text-green-400 font-medium';
+    if (lesson.current) return 'text-blue-600 dark:text-blue-400 font-bold';
+    if (lesson.locked) return 'text-gray-500 dark:text-gray-400 font-medium';
+    return 'text-gray-600 dark:text-gray-400 font-medium';
+  };
+
+  const CardContent = (
+    <div className="flex flex-col items-center text-center flex-shrink-0 w-40">
+      <div
+        className={`relative ${getCardStyle()} rounded-xl p-4 w-full aspect-square flex items-center justify-center text-white shadow-lg transition-transform duration-200 ease-in-out ${
+          !lesson.locked ? 'hover:scale-105' : ''
+        }`}
       >
-        <CardContent className="p-4 sm:p-6 text-center">
-          <div className="mb-3 sm:mb-4">
-            {lesson.completed ? (
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-secondary rounded-full flex items-center justify-center mx-auto">
-                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-secondary-foreground" />
-              </div>
-            ) : lesson.current ? (
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-full flex items-center justify-center mx-auto">
-                <Play className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
-              </div>
-            ) : lesson.locked ? (
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-muted rounded-full flex items-center justify-center mx-auto">
-                <Lock className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
-              </div>
-            ) : (
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-muted rounded-full flex items-center justify-center mx-auto">
-                {lesson.type === 'quiz' ? (
-                  <Award className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
-                ) : (
-                  <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
-                )}
-              </div>
-            )}
-          </div>
+        <span
+          className={`material-symbols-outlined filled !text-6xl ${
+            lesson.locked
+              ? 'text-gray-400/50 dark:text-white/20'
+              : 'text-white/50'
+          } absolute top-1 right-1`}
+        >
+          {getIconName()}
+        </span>
+        <div className="relative z-10 flex flex-col items-center">
+          <span className="text-xl font-bold">
+            {lesson.title.replace('Lesson ', '')}
+          </span>
+        </div>
+      </div>
+      <p className={`mt-2 text-sm ${getStatusColor()} flex items-center gap-1`}>
+        <span className="material-symbols-outlined filled !text-base">
+          {getIconName()}
+        </span>
+        {getStatusText()}
+      </p>
+    </div>
+  );
 
-          <h4 className="text-sm sm:text-base font-semibold text-foreground mb-2">
-            {lesson.title}
-          </h4>
+  if (lesson.locked) {
+    return <div className="cursor-not-allowed">{CardContent}</div>;
+  }
 
-          {lesson.progress > 0 && lesson.progress < 100 && (
-            <div className="mt-2 sm:mt-3">
-              <Progress value={lesson.progress} className="h-1.5" />
-              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
-                {lesson.progress}% selesai
-              </p>
-            </div>
-          )}
-
-          {lesson.current && !lesson.locked && (
-            <Button
-              size="sm"
-              className="mt-2 sm:mt-3 w-full text-xs sm:text-sm"
-            >
-              Lanjutkan
-            </Button>
-          )}
-
-          {lesson.completed && (
-            <p className="text-[10px] sm:text-xs text-green-600 mt-2 flex items-center justify-center gap-1">
-              <CheckCircle className="h-3 w-3" />
-              Selesai
-            </p>
-          )}
-
-          {lesson.locked && (
-            <p className="text-[10px] sm:text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1">
-              <Lock className="h-3 w-3" />
-              Selesaikan level sebelumnya
-            </p>
-          )}
-        </CardContent>
-      </Link>
-    </Card>
+  return (
+    <Link href={getLessonRoute(lesson)} className="cursor-pointer">
+      {CardContent}
+    </Link>
   );
 }

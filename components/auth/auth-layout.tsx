@@ -23,8 +23,10 @@ export function AuthLayout({
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{title}</h1>
-          <p className="text-gray-600">{subtitle}</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            {title}
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">{subtitle}</p>
         </div>
 
         <Card>
@@ -58,7 +60,7 @@ export function AuthSeparator() {
   return (
     <div className="relative my-4">
       <Separator />
-      <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-2 text-sm text-muted-foreground">
+      <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-sm text-muted-foreground">
         atau
       </span>
     </div>

@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { Menu } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Menu, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
+import { useTheme } from 'next-themes';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +33,12 @@ export function Navbar() {
   const loading = useAuthStore((state) => state.loading);
   const signOut = useAuthStore((state) => state.signOut);
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isAuthenticated = !!user;
 
@@ -41,89 +49,68 @@ export function Navbar() {
   // Navigation items for unauthenticated users
   const unauthenticatedItems = [
     {
-      name: 'Mulai Belajar',
-      href: '/auth/login',
-    },
-  ];
-
-  // Navigation items for authenticated users
-  const authenticatedItems = [
-    {
       name: 'Belajar',
-      href: '/learn',
-    },
-    {
-      name: 'Review',
-      href: '/review',
-    },
-    {
-      name: 'Leaderboard',
-      href: '/leaderboard',
+      href: '#', // Placeholder as per design, or keep existing logic? Design has #. I'll keep existing logic if possible, but design says "Belajar", "Review", "Leaderboard" are visible even when logged out in the HTML?
+      // Actually, the HTML shows "Belajar", "Review", "Leaderboard" in the nav, and "Log In", "Sign Up" buttons.
+      // I will stick to the design's visual structure but keep the auth logic for the "Log In" / "Sign Up" buttons.
     },
   ];
 
-  const navigationItems = isAuthenticated
-    ? authenticatedItems
-    : unauthenticatedItems;
+  const navLinks = [
+    { name: 'Belajar', href: '/learn' }, // mapped to real routes
+    { name: 'Review', href: '/review' },
+    { name: 'Leaderboard', href: '/leaderboard' },
+  ];
 
   return (
-    <header className="bg-background border-b sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-xl font-bold text-primary">Isyara</span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center">
-            {loading ? (
-              <div className="flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+    <div className="relative z-50 flex flex-col items-center w-full px-4 sm:px-6 lg:px-8 pointer-events-none">
+      <div className="w-full max-w-5xl pointer-events-auto">
+        <header className="sticky top-0 z-50 flex items-center justify-between py-4 mt-4 backdrop-blur-lg bg-white/30 dark:bg-black/30 border border-gray-200/50 dark:border-white/10 rounded-full px-6 transition-all duration-300">
+          <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="relative size-8">
+                <Image
+                  src="/favicon.ico"
+                  alt="Isyara Logo"
+                  fill
+                  className="object-contain"
+                />
               </div>
-            ) : (
-              navigationItems.map((item) => {
-                const isActive = pathname === item.href;
-                const isUnauthenticatedButton =
-                  !isAuthenticated && item.name === 'Mulai Belajar';
-                return (
-                  <Link key={item.name} href={item.href}>
-                    <Button
-                      variant={
-                        isActive || isUnauthenticatedButton
-                          ? 'default'
-                          : 'ghost'
-                      }
-                      className={cn(
-                        isActive || isUnauthenticatedButton
-                          ? 'bg-primary text-white'
-                          : 'text-foreground'
-                      )}
-                    >
-                      <span>{item.name}</span>
-                    </Button>
-                  </Link>
-                );
-              })
-            )}
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                Isyara
+              </h2>
+            </Link>
+          </div>
 
-            {/* User Profile Dropdown */}
-            {!loading && isAuthenticated && (
+          <nav className="hidden md:flex items-center gap-8">
+            {navLinks.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            {loading ? (
+              <div className="w-20 h-10 animate-pulse bg-gray-200 dark:bg-gray-800 rounded-full" />
+            ) : isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost">
-                    <span>
+                  <button className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-gray-200/80 dark:bg-white/10 text-gray-800 dark:text-white text-sm font-bold leading-normal tracking-wide hover:bg-gray-300/80 dark:hover:bg-white/20 transition-colors outline-none">
+                    <span className="truncate max-w-[100px]">
                       {user?.user_metadata?.username ||
                         user?.user_metadata?.name ||
                         user?.email}
                     </span>
-                  </Button>
+                  </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem asChild>
-                    <Link href="/profile">
-                      <span>Profil</span>
-                    </Link>
+                    <Link href="/profile">Profil</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -132,78 +119,65 @@ export function Navbar() {
                       setLogoutOpen(true);
                     }}
                   >
-                    <span>Keluar</span>
+                    Keluar
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+            ) : (
+              <>
+                <Link href="/auth/login">
+                  <button className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-gray-200/80 dark:bg-white/10 text-gray-800 dark:text-white text-sm font-bold leading-normal tracking-wide hover:bg-gray-300/80 dark:hover:bg-white/20 transition-colors">
+                    <span className="truncate">Masuk</span>
+                  </button>
+                </Link>
+                <Link href="/auth/register" className="hidden sm:block">
+                  <button className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-wide hover:bg-primary/90 transition-colors">
+                    <span className="truncate">Daftar</span>
+                  </button>
+                </Link>
+              </>
             )}
-          </nav>
 
-          {/* Mobile Menu */}
-          <div className="md:hidden">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" disabled={loading}>
-                  <Menu className="h-5 w-5" color="black" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                {loading ? (
-                  <DropdownMenuItem disabled>
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                    </div>
-                  </DropdownMenuItem>
-                ) : (
-                  <>
-                    {navigationItems.map((item) => {
-                      const isActive = pathname === item.href;
-                      const isUnauthenticatedButton =
-                        !isAuthenticated && item.name === 'Mulai Belajar';
-                      return (
-                        <DropdownMenuItem asChild key={item.name}>
-                          <Link
-                            href={item.href}
-                            className={cn(
-                              'w-full',
-                              isActive || isUnauthenticatedButton
-                                ? 'text-primary bg-primary/10'
-                                : 'text-foreground'
-                            )}
-                          >
-                            <span>{item.name}</span>
-                          </Link>
-                        </DropdownMenuItem>
-                      );
-                    })}
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="flex items-center justify-center rounded-full h-10 w-10 bg-gray-200/80 dark:bg-white/10 text-gray-800 dark:text-white hover:bg-gray-300/80 dark:hover:bg-white/20 transition-colors"
+            >
+              {mounted ? (
+                <>
+                  <Moon className="h-5 w-5 dark:hidden" />
+                  <Sun className="h-5 w-5 hidden dark:block" />
+                </>
+              ) : (
+                <div className="h-5 w-5" />
+              )}
+            </button>
 
-                    {/* Mobile Profile + Sign Out */}
-                    {isAuthenticated && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                          <Link href="/profile" className="w-full">
-                            <span>Profil</span>
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onSelect={(e) => {
-                            e.preventDefault();
-                            setLogoutOpen(true);
-                          }}
-                        >
-                          <span>Keluar</span>
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Mobile Menu Trigger */}
+            <div className="md:hidden ml-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center justify-center rounded-full h-10 w-10 bg-gray-200/80 dark:bg-white/10 text-gray-800 dark:text-white hover:bg-gray-300/80 dark:hover:bg-white/20 transition-colors">
+                    <Menu className="h-5 w-5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 mt-2">
+                  {navLinks.map((item) => (
+                    <DropdownMenuItem key={item.name} asChild>
+                      <Link href={item.href}>{item.name}</Link>
+                    </DropdownMenuItem>
+                  ))}
+                  {!isAuthenticated && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/auth/register">Daftar</Link>
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-        </div>
+        </header>
       </div>
-      {/* Global Logout Alert Dialog */}
+
       <AlertDialog open={logoutOpen} onOpenChange={setLogoutOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -216,15 +190,13 @@ export function Navbar() {
             <AlertDialogCancel>Batalkan</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleSignOut}
-              className={cn(
-                'bg-destructive text-white hover:bg-destructive/90'
-              )}
+              className="bg-destructive text-white hover:bg-destructive/90"
             >
               Keluar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </header>
+    </div>
   );
 }

@@ -2,13 +2,14 @@
 
 import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Trophy, Target, RotateCcw, TrendingUp, Award } from 'lucide-react';
+  Trophy,
+  Target,
+  RotateCcw,
+  TrendingUp,
+  Award,
+  CheckCircle2,
+  XCircle,
+} from 'lucide-react';
 import type { QuizQuestion } from '@type/quiz';
 
 interface QuizCompletedCardProps {
@@ -37,120 +38,119 @@ export function QuizCompletedCard({
   const hasReward = typeof xpReward === 'number' && xpReward > 0;
 
   return (
-    <div className="h-screen flex items-center justify-center p-4 overflow-hidden">
-      <div className="max-w-2xl w-full">
-        <Card className="text-center">
-          <CardHeader className="pb-3">
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 ${
-                accuracy >= 70 ? 'bg-green-100' : 'bg-red-100'
-              }`}
-            >
-              {accuracy >= 70 ? (
-                <Trophy className="h-5 w-5 text-green-600" />
-              ) : (
-                <Target className="h-5 w-5 text-red-600" />
-              )}
-            </div>
-            <CardTitle className="text-lg">
-              {accuracy >= 70 ? 'Selamat! Anda Lulus!' : 'Belum Berhasil'}
-            </CardTitle>
-            <CardDescription className="text-sm">
-              {accuracy >= 70
-                ? 'Kemampuan BISINDO Anda sudah baik!'
-                : 'Terus berlatih untuk meningkatkan kemampuan Anda'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 pt-0">
-            {/* Results Summary */}
-            <div className="grid grid-cols-3 gap-2">
-              <div className="text-center p-2 bg-muted/50 rounded-lg">
-                <div className="text-lg font-bold text-primary">
-                  {correctAnswers}
-                </div>
-                <div className="text-xs text-muted-foreground">Benar</div>
-              </div>
-              <div className="text-center p-2 bg-muted/50 rounded-lg">
-                <div className="text-lg font-bold text-primary">
-                  {accuracy}%
-                </div>
-                <div className="text-xs text-muted-foreground">Akurasi</div>
-              </div>
-              <div className="text-center p-2 bg-muted/50 rounded-lg">
-                <div className="text-lg font-bold text-primary">
-                  {averageTime}s
-                </div>
-                <div className="text-xs text-muted-foreground">Rata-rata</div>
-              </div>
-            </div>
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="max-w-2xl w-full bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/10 shadow-lg backdrop-blur-xl rounded-2xl p-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div
+            className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ring-8 ${
+              passed
+                ? 'bg-green-100 text-green-600 ring-green-50 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-900/10'
+                : 'bg-red-100 text-red-600 ring-red-50 dark:bg-red-900/20 dark:text-red-400 dark:ring-red-900/10'
+            }`}
+          >
+            {passed ? (
+              <Trophy className="h-10 w-10" />
+            ) : (
+              <Target className="h-10 w-10" />
+            )}
+          </div>
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            {passed ? 'Selamat! Anda Lulus!' : 'Belum Berhasil'}
+          </h1>
+          <p className="text-muted-foreground">
+            {passed
+              ? 'Kemampuan BISINDO Anda sudah baik!'
+              : 'Terus berlatih untuk meningkatkan kemampuan Anda'}
+          </p>
+        </div>
 
-            {/* Reward / Retry info */}
-            {passed &&
-              (hasReward ? (
-                <div className="bg-gradient-to-br from-yellow-50 to-amber-50 border border-yellow-200 p-4 rounded-lg text-center">
-                  <div className="relative inline-block">
-                    <Award
-                      className="h-12 w-12 text-yellow-500 mx-auto mb-2 fill-yellow-400 stroke-yellow-600 drop-shadow-lg"
-                      strokeWidth={2}
-                    />
-                  </div>
-                  <p className="font-bold text-lg text-yellow-700 mb-0.5">
-                    +{xpReward} XP Diperoleh
-                  </p>
-                  <p className="text-xs text-yellow-600/80 font-medium">
-                    Mantap! Pertahankan performa belajarmu
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-muted/40 border border-muted p-4 rounded-lg text-center">
-                  <p className="font-semibold text-foreground mb-0.5">
-                    Latihan Ulang
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Kuis ini sudah pernah selesai. Tidak ada XP tambahan.
-                  </p>
+        <div className="space-y-6">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="flex flex-col items-center p-4 bg-white/50 dark:bg-white/5 rounded-xl border border-white/20">
+              <span className="text-2xl font-bold text-primary">
+                {correctAnswers}
+              </span>
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Benar
+              </span>
+            </div>
+            <div className="flex flex-col items-center p-4 bg-white/50 dark:bg-white/5 rounded-xl border border-white/20">
+              <span className="text-2xl font-bold text-primary">
+                {accuracy}%
+              </span>
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Akurasi
+              </span>
+            </div>
+            <div className="flex flex-col items-center p-4 bg-white/50 dark:bg-white/5 rounded-xl border border-white/20">
+              <span className="text-2xl font-bold text-primary">
+                {averageTime}s
+              </span>
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Rata-rata
+              </span>
+            </div>
+          </div>
+
+          {/* Reward Section */}
+          {passed && hasReward && (
+            <div className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 border border-yellow-200 dark:border-yellow-900/30 p-6 rounded-xl text-center relative overflow-hidden">
+              <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-yellow-400/20 rounded-full blur-2xl" />
+              <Award className="h-12 w-12 text-yellow-500 mx-auto mb-3 drop-shadow-sm" />
+              <p className="text-xl font-bold text-yellow-700 dark:text-yellow-400 mb-1">
+                +{xpReward} XP Diperoleh
+              </p>
+              <p className="text-sm text-yellow-600/80 dark:text-yellow-500/80 font-medium">
+                Mantap! Pertahankan performa belajarmu
+              </p>
+            </div>
+          )}
+
+          {/* Answer Details */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-foreground">
+              Detail Jawaban
+            </h3>
+            <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+              {questions.map((question, index) => (
+                <div
+                  key={index}
+                  className={`aspect-square rounded-lg flex items-center justify-center text-sm font-bold border ${
+                    question.correct
+                      ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/30'
+                      : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/30'
+                  }`}
+                  title={`Soal ${index + 1}: ${question.item}`}
+                >
+                  {question.item}
                 </div>
               ))}
-
-            {/* Detailed Results */}
-            <div className="bg-muted/30 rounded-lg p-3">
-              <h3 className="text-sm font-medium mb-2">Detail Jawaban</h3>
-              <div className="grid grid-cols-5 gap-1">
-                {questions.map((question, index) => (
-                  <div
-                    key={index}
-                    className={`aspect-square rounded-md flex items-center justify-center text-xs font-medium ${
-                      question.correct
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700'
-                    }`}
-                  >
-                    {question.item}
-                  </div>
-                ))}
-              </div>
             </div>
+          </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-2 pt-1">
-              <Button
-                onClick={onReset}
-                variant="outline"
-                className="flex-1 bg-transparent"
-                size="sm"
-              >
-                <RotateCcw className="h-4 w-4 mr-2" />
-                Coba Lagi
-              </Button>
-              <Button asChild className="flex-1" size="sm">
-                <a href="/learn">
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Kembali ke Belajar
-                </a>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Actions */}
+          <div className="grid grid-cols-2 gap-4 pt-2">
+            <Button
+              onClick={onReset}
+              variant="outline"
+              className="h-12 rounded-full border-slate-200 dark:border-white/10 hover:bg-muted dark:hover:bg-white/5"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Coba Lagi
+            </Button>
+            <Button
+              asChild
+              className="h-12 rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/40"
+            >
+              <a href="/learn">
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Kembali ke Belajar
+              </a>
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
