@@ -14,7 +14,7 @@ interface PerformanceSnapshot {
   backend: string;
 }
 
-interface RecordedData {
+export interface RecordedData {
   backend: string;
   device_info: {
     userAgent: string;
@@ -36,14 +36,25 @@ interface RecordedData {
   recorded_at: string;
 }
 
-export function PerformanceRecorderInline() {
-  const [isRecording, setIsRecording] = useState(false);
+interface PerformanceRecorderInlineProps {
+  isRecording?: boolean;
+  onRecordingComplete?: (data: RecordedData) => void;
+}
+
+export function PerformanceRecorderInline({
+  isRecording: externalIsRecording,
+  onRecordingComplete,
+}: PerformanceRecorderInlineProps = {}) {
+  const [internalIsRecording, setInternalIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
   const [recordedData, setRecordedData] = useState<RecordedData | null>(null);
   const [sampleCount, setSampleCount] = useState(0);
   const samplesRef = useRef<PerformanceSnapshot[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
+
+  const isControlled = typeof externalIsRecording !== 'undefined';
+  const isRecording = isControlled ? externalIsRecording : internalIsRecording;
 
   const getBrowserInfo = () => {
     const ua = navigator.userAgent;
@@ -101,10 +112,12 @@ export function PerformanceRecorderInline() {
   const startRecording = () => {
     samplesRef.current = [];
     startTimeRef.current = performance.now();
-    setIsRecording(true);
+    if (!isControlled) setInternalIsRecording(true);
     setDuration(0);
     setSampleCount(0);
     setRecordedData(null);
+
+    if (intervalRef.current) clearInterval(intervalRef.current);
 
     intervalRef.current = setInterval(() => {
       collectSample();
@@ -118,14 +131,18 @@ export function PerformanceRecorderInline() {
   const stopRecording = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
-    setIsRecording(false);
+    if (!isControlled) setInternalIsRecording(false);
 
     const samples = samplesRef.current;
     if (samples.length === 0) {
-      alert(
-        'Tidak ada data terekam. Pastikan Performance Stats aktif dan camera running.'
-      );
+      // If controlled, we might just return null or empty data
+      if (!isControlled) {
+        alert(
+          'Tidak ada data terekam. Pastikan Performance Stats aktif dan camera running.'
+        );
+      }
       return;
     }
 
@@ -171,10 +188,15 @@ export function PerformanceRecorderInline() {
     };
 
     setRecordedData(data);
-    console.log('📊 Performance recording complete:', data);
-
-    // Auto-download
-    downloadData(data);
+    if (onRecordingComplete) {
+      onRecordingComplete(data);
+    } else {
+      console.log('📊 Performance recording complete:', data);
+      // Only auto-download if not controlled (legacy behavior)
+      if (!isControlled) {
+        downloadData(data);
+      }
+    }
   };
 
   const downloadData = (data: RecordedData) => {
@@ -191,6 +213,20 @@ export function PerformanceRecorderInline() {
     URL.revokeObjectURL(url);
   };
 
+  // Effect to handle external control
+  useEffect(() => {
+    if (isControlled) {
+      if (externalIsRecording) {
+        startRecording();
+      } else {
+        // Only stop if we were actually recording (to avoid initial mount stop)
+        if (intervalRef.current) {
+          stopRecording();
+        }
+      }
+    }
+  }, [externalIsRecording]);
+
   useEffect(() => {
     return () => {
       if (intervalRef.current) {
@@ -199,6 +235,12 @@ export function PerformanceRecorderInline() {
     };
   }, []);
 
+  // If controlled, render nothing (headless mode)
+  if (isControlled) {
+    return null;
+  }
+
+  // Legacy UI for manual mode
   if (recordedData) {
     return (
       <div className="fixed bottom-4 right-4 bg-white dark:bg-gray-800 border-2 border-green-500 rounded-lg shadow-2xl p-4 max-w-xs z-50">

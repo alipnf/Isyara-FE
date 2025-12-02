@@ -13,7 +13,10 @@ import {
   isCategoryKey,
   type CategoryKey,
 } from '@/components/lesson';
-import { PerformanceRecorderInline } from '@/components/lesson/PerformanceRecorderInline';
+import {
+  PerformanceRecorderInline,
+  RecordedData,
+} from '@/components/lesson/PerformanceRecorderInline';
 import { useLessonLogic } from '@hooks/useLessonLogic';
 import {
   completeLessonByKey,
@@ -53,6 +56,9 @@ function LessonPageContent() {
 
   const [xpReward, setXpReward] = useState<number | null>(null);
   const [alreadyCompleted, setAlreadyCompleted] = useState<boolean>(false);
+  const [performanceData, setPerformanceData] = useState<RecordedData | null>(
+    null
+  );
 
   const progressValue = useMemo(() => {
     return groupItems.length
@@ -126,6 +132,14 @@ function LessonPageContent() {
     }
   };
 
+  // Determine if we should be recording
+  // We record if:
+  // 1. Performance stats setting is ON
+  // 2. Camera is enabled
+  // 3. Lesson is NOT completed yet
+  const shouldRecord =
+    settings.showPerformanceStats && cameraEnabled && !showCompletion;
+
   return (
     <div className="relative w-full min-h-screen overflow-x-hidden">
       {/* Background - Solid, no blobs */}
@@ -169,11 +183,15 @@ function LessonPageContent() {
         open={showCompletion}
         categoryName={selectedCategory}
         xpReward={alreadyCompleted ? 0 : xpReward}
+        performanceData={performanceData}
       />
 
-      {/* Performance Recorder - Only show if performance stats are enabled */}
-      {settings.showPerformanceStats && cameraEnabled && (
-        <PerformanceRecorderInline />
+      {/* Performance Recorder - Controlled Mode */}
+      {settings.showPerformanceStats && (
+        <PerformanceRecorderInline
+          isRecording={shouldRecord}
+          onRecordingComplete={(data) => setPerformanceData(data)}
+        />
       )}
     </div>
   );
