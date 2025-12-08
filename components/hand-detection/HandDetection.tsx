@@ -787,13 +787,6 @@ export function HandDetection({
         </div>
       )}
 
-      {/* Current detection display */}
-      {currentDetectedLabel && (
-        <div className="absolute top-2 right-2 bg-black/60 text-white px-3 py-1.5 text-sm rounded">
-          Deteksi: <span className="font-bold">{currentDetectedLabel}</span>
-        </div>
-      )}
-
       {/* Hold alert overlay */}
       {showHoldAlert && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

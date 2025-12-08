@@ -18,7 +18,7 @@ export function useLessonLogic(
   );
   const [showCompletion, setShowCompletion] = useState(false);
   const [settings, setSettings] = useState<LessonSettings>({
-    showHandLandmarks: true,
+    showHandLandmarks: false,
     autoAdvance: true,
     holdDuration: [3],
     confidenceThreshold: [75],

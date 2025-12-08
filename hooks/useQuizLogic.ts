@@ -21,7 +21,7 @@ export function useQuizLogic() {
   >('inactive');
 
   const [settings, setSettings] = useState<LessonSettings>({
-    showHandLandmarks: true,
+    showHandLandmarks: false,
     showPerformanceStats: false,
     autoAdvance: true,
     holdDuration: [2],

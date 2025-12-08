@@ -82,7 +82,7 @@ export function ReviewCameraSection({
           isDetecting={isDetecting}
           onDetection={onDetection}
           onLiveUpdate={onLiveUpdate}
-          showLandmarks={true}
+          showLandmarks={false}
           expectedLabel={currentItem}
           confidenceThreshold={0.75}
           holdDuration={2}
