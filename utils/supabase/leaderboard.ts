@@ -9,17 +9,15 @@ function initials(input: string | null | undefined) {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
-export async function fetchTop5Users(): Promise<LeaderboardUser[]> {
-  const { data, error } = await supabase
-    .from('users')
-    .select('id, full_name, avatar_url, level, xp, total_lessons_completed')
-    .order('xp', { ascending: false })
-    .limit(5);
+export async function fetchLeaderboard(limit = 50): Promise<LeaderboardUser[]> {
+  const { data, error } = await supabase.rpc('get_leaderboard', {
+    p_limit: limit,
+  });
 
   if (error) throw error;
 
-  const top = (data || []).map((row, idx) => ({
-    rank: idx + 1,
+  const top = (data || []).map((row: any, idx: number) => ({
+    rank: row.rank,
     name: row.full_name || 'Pengguna',
     xp: row.xp ?? 0,
     level: row.level ?? 1,
@@ -28,7 +26,7 @@ export async function fetchTop5Users(): Promise<LeaderboardUser[]> {
     lessonsCompleted: row.total_lessons_completed ?? 0,
     isCurrentUser: false,
     // Keep internal id for identifying current user later (not in type)
-    _id: (row as any).id,
+    _id: row.user_id,
   })) as (LeaderboardUser & { _id: string })[];
 
   // Mark current user if present in top 5

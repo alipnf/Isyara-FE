@@ -11,7 +11,7 @@ import {
 } from '@/components/leaderboard';
 import type { LeaderboardUser, StatsData } from '@type/leaderboard';
 import {
-  fetchTop5Users,
+  fetchLeaderboard,
   fetchCurrentUserRank,
   fetchLeaderboardStats,
 } from '@/utils/supabase/leaderboard';
@@ -35,7 +35,7 @@ export default function LeaderboardPage() {
       setError(null);
       try {
         const [t5, cu, st] = await Promise.all([
-          fetchTop5Users(),
+          fetchLeaderboard(50),
           fetchCurrentUserRank(),
           fetchLeaderboardStats(),
         ]);

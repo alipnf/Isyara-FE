@@ -2,7 +2,7 @@ import { supabase } from '@/utils/supabase/client';
 
 export type DbUser = {
   id: string;
-  username: string | null;
+  full_name: string | null;
   avatar_url: string | null;
   level: number | null;
   xp: number | null;
@@ -36,9 +36,15 @@ export async function updateMyUser(patch: {
   } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
 
+  const updates: any = { ...patch };
+  if (patch.username) {
+    updates.full_name = patch.username;
+    delete updates.username;
+  }
+
   const { error } = await supabase
     .from('users')
-    .update({ ...patch })
+    .update(updates)
     .eq('id', user.id);
 
   if (error) throw error;

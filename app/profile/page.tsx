@@ -23,7 +23,7 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [dbUser, setDbUser] = useState<{
     id: string;
-    username: string | null;
+    full_name: string | null;
     avatar_url: string | null;
     level: number | null;
     xp: number | null;
@@ -47,10 +47,11 @@ export default function ProfilePage() {
     const name =
       authMeta.full_name ||
       authMeta.name ||
-      dbUser.username ||
+      authMeta.name ||
+      dbUser.full_name ||
       local ||
       'Pengguna';
-    const username = dbUser.username || local || 'pengguna';
+    const username = dbUser.full_name || local || 'pengguna';
     const avatar =
       dbUser.avatar_url || authMeta.avatar_url || authMeta.picture || null;
 
@@ -77,7 +78,7 @@ export default function ProfilePage() {
         const data = await getMyUser();
         if (!mounted) return;
         setDbUser(data);
-        setEditData({ username: data?.username || '' });
+        setEditData({ username: data?.full_name || '' });
       } catch (e: any) {
         if (!mounted) return;
         setError(e?.message || 'Gagal memuat profil');
@@ -110,7 +111,7 @@ export default function ProfilePage() {
   };
 
   const handleCancelEdit = () => {
-    if (dbUser) setEditData({ username: dbUser.username || '' });
+    if (dbUser) setEditData({ username: dbUser.full_name || '' });
     setIsEditing(false);
   };
 
