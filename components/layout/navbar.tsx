@@ -26,6 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 export function Navbar() {
   const pathname = usePathname();
@@ -100,12 +101,27 @@ export function Navbar() {
             ) : isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="hidden md:flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-gray-200/80 dark:bg-white/10 text-gray-800 dark:text-white text-sm font-bold leading-normal tracking-wide hover:bg-gray-300/80 dark:hover:bg-white/20 transition-colors outline-none">
-                    <span className="truncate max-w-[100px]">
-                      {user?.user_metadata?.username ||
-                        user?.user_metadata?.name ||
-                        user?.email}
-                    </span>
+                  <button className="hidden md:flex items-center justify-center rounded-full h-10 w-10 overflow-hidden border border-gray-200 dark:border-white/10 hover:opacity-80 transition-opacity outline-none">
+                    <Avatar className="h-full w-full">
+                      <AvatarImage
+                        src={user?.user_metadata?.avatar_url}
+                        alt={
+                          user?.user_metadata?.username ||
+                          user?.user_metadata?.name ||
+                          'User'
+                        }
+                      />
+                      <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                        {(
+                          user?.user_metadata?.username ||
+                          user?.user_metadata?.name ||
+                          user?.email ||
+                          'U'
+                        )
+                          .slice(0, 2)
+                          .toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">

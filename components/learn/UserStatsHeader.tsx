@@ -2,7 +2,7 @@
 
 import { UserStats } from '@type/learn';
 import { useAuthStore } from '@/stores/authStore';
-import Image from 'next/image';
+
 
 interface UserStatsHeaderProps {
   stats: UserStats;
@@ -15,20 +15,12 @@ export function UserStatsHeader({ stats }: UserStatsHeaderProps) {
     user?.user_metadata?.name ||
     user?.email?.split('@')[0] ||
     'Pengguna';
-  const avatarUrl = user?.user_metadata?.avatar_url || '/favicon.ico';
+
 
   return (
     <div className="w-full bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/10 shadow-lg backdrop-blur-xl rounded-xl p-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div className="flex items-center gap-4">
-        <div className="relative w-16 h-16 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 flex-shrink-0">
-          <Image
-            src={avatarUrl}
-            alt="User Avatar"
-            fill
-            className="object-cover"
-            unoptimized
-          />
-        </div>
+
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Selamat Datang, {username}!
