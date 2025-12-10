@@ -58,7 +58,7 @@ export function Navbar() {
 
   const navLinks = [
     { name: 'Belajar', href: '/learn' }, // mapped to real routes
-    { name: 'Review', href: '/review' },
+    { name: 'Kilas Balik', href: '/review' },
     { name: 'Peringkat', href: '/leaderboard' },
   ];
 

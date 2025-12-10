@@ -70,7 +70,7 @@ export function ReviewSetupCard({
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-foreground">
-                  Review Materi: {category.name}
+                  Kilas Balik Materi: {category.name}
                 </h1>
                 <p className="text-muted-foreground">{category.description}</p>
               </div>
@@ -78,7 +78,7 @@ export function ReviewSetupCard({
 
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-foreground">
-                Panduan Review:
+                Panduan Kilas Balik:
               </h2>
               <ul className="space-y-3">
                 {[
@@ -106,7 +106,7 @@ export function ReviewSetupCard({
             className="w-full h-14 text-lg font-bold rounded-full shadow-lg shadow-primary/40 hover:shadow-glow-primary transition-all duration-300 hover:scale-[1.02] mt-auto"
             disabled={!cameraEnabled}
           >
-            Mulai Review
+            Mulai Kilas Balik
           </Button>
         </div>
 

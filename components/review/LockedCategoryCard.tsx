@@ -39,13 +39,12 @@ export function LockedCategoryCard({
         <CardContent className="space-y-6">
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
-              <div>
+              <div className="w-full">
                 <h4 className="font-medium text-yellow-800">
-                  Syarat Akses Review
+                  Syarat Akses Kilas Balik
                 </h4>
                 <p className="text-sm text-yellow-700 mt-1">
-                  Mode review akan terbuka setelah seluruh pelajaran{' '}
+                  Mode kilas balik akan terbuka setelah seluruh pelajaran{' '}
                   {category.name}
                   selesai (100%).
                 </p>
