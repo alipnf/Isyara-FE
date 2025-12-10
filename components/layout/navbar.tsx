@@ -59,7 +59,7 @@ export function Navbar() {
   const navLinks = [
     { name: 'Belajar', href: '/learn' }, // mapped to real routes
     { name: 'Review', href: '/review' },
-    { name: 'Leaderboard', href: '/leaderboard' },
+    { name: 'Peringkat', href: '/leaderboard' },
   ];
 
   return (

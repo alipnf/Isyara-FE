@@ -45,7 +45,7 @@ export default function LeaderboardPage() {
         setStats(st);
       } catch (e: any) {
         if (!mounted) return;
-        setError(e?.message || 'Gagal memuat leaderboard');
+        setError(e?.message || 'Gagal memuat peringkat');
       } finally {
         if (mounted) setLoading(false);
       }
@@ -63,7 +63,7 @@ export default function LeaderboardPage() {
 
         {loading && (
           <div className="flex items-center gap-3 text-muted-foreground mb-4">
-            <Spinner className="h-4 w-4" /> Memuat leaderboard...
+            <Spinner className="h-4 w-4" /> Memuat peringkat...
           </div>
         )}
         {!loading && error && (

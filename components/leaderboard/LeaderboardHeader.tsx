@@ -6,7 +6,7 @@ export default function LeaderboardHeader() {
       <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
         <Trophy className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
         <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
-          Leaderboard
+          Peringkat
         </h2>
       </div>
       <p className="text-sm sm:text-base text-muted-foreground px-4">
