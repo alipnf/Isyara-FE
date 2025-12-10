@@ -21,7 +21,7 @@ export function LearningUnit({
           <p className="mt-2 opacity-90 text-lg">{unit.description}</p>
         </div>
         <div className="absolute -right-8 -bottom-8 text-white/20 hidden md:block">
-          <span className="material-symbols-outlined filled !text-[180px]">
+          <span className="material-symbols-outlined filled text-[180px]!">
             school
           </span>
         </div>
@@ -32,24 +32,13 @@ export function LearningUnit({
         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
           Jalur Pelajaran:
         </h3>
-        <div className="flex items-start gap-4 pb-4 overflow-x-auto overflow-y-visible">
-          {unit.lessons.map((lesson, index) => (
-            <>
-              <LessonCard
-                key={lesson.id}
-                lesson={lesson}
-                getLessonRoute={getLessonRoute}
-              />
-              {index < unit.lessons.length - 1 && (
-                <div
-                  className={`flex items-center self-center h-2 w-8 md:w-16 rounded-full ${
-                    lesson.completed
-                      ? 'bg-gradient-to-r from-green-400 to-blue-400 dark:from-green-600 dark:to-blue-600'
-                      : 'bg-gray-300 dark:bg-white/10'
-                  }`}
-                ></div>
-              )}
-            </>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 justify-items-center">
+          {unit.lessons.map((lesson) => (
+            <LessonCard
+              key={lesson.id}
+              lesson={lesson}
+              getLessonRoute={getLessonRoute}
+            />
           ))}
         </div>
       </div>

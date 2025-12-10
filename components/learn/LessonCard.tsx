@@ -44,21 +44,12 @@ export function LessonCard({ lesson, getLessonRoute }: LessonCardProps) {
   };
 
   const CardContent = (
-    <div className="flex flex-col items-center text-center flex-shrink-0 w-40">
+    <div className="flex flex-col items-center text-center shrink-0 w-40">
       <div
         className={`relative ${getCardStyle()} rounded-xl p-4 w-full aspect-square flex items-center justify-center text-white shadow-lg transition-transform duration-200 ease-in-out ${
           !lesson.locked ? 'hover:scale-105' : ''
         }`}
       >
-        <span
-          className={`material-symbols-outlined filled !text-6xl ${
-            lesson.locked
-              ? 'text-gray-400/50 dark:text-white/20'
-              : 'text-white/50'
-          } absolute top-1 right-1`}
-        >
-          {getIconName()}
-        </span>
         <div className="relative z-10 flex flex-col items-center">
           <span className="text-xl font-bold">
             {lesson.title.replace('Lesson ', '')}
