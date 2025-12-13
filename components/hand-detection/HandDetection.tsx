@@ -42,7 +42,7 @@ export function HandDetection({
   modelPath = '/models/model.json',
   classesPath = '/models/classes.json',
   containerClassName = '',
-  holdDuration = 3, // Default 3 seconds
+  holdDuration = 2, // Default 2 seconds
   expectedLabel = '', // Expected label (e.g. the letter being practiced)
 }: HandDetectionProps) {
   // Temporary toggle to disable per-letter hand-count requirements

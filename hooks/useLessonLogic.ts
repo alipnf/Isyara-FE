@@ -20,7 +20,7 @@ export function useLessonLogic(
   const [settings, setSettings] = useState<LessonSettings>({
     showHandLandmarks: false,
     autoAdvance: true,
-    holdDuration: [3],
+    holdDuration: [2],
     confidenceThreshold: [75],
     showPerformanceStats: false,
   });
