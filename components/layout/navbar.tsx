@@ -84,7 +84,7 @@ export function Navbar() {
           </div>
 
           <nav className="hidden md:flex items-center gap-8">
-            {navLinks.map((item) => (
+            {isAuthenticated && navLinks.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
@@ -196,7 +196,7 @@ export function Navbar() {
                       <DropdownMenuSeparator />
                     </>
                   )}
-                  {navLinks.map((item) => (
+                  {isAuthenticated && navLinks.map((item) => (
                     <DropdownMenuItem key={item.name} asChild>
                       <Link href={item.href}>{item.name}</Link>
                     </DropdownMenuItem>
