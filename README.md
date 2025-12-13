@@ -16,6 +16,20 @@ tangan real‑time, progres belajar, kuis, review, dan leaderboard.
 - Admin: Halaman admin untuk kelola lesson definitions
   (menambah/mengedit/menghapus, mengatur urutan dan XP reward).
 
+## Screenshots
+
+|            Halaman Utama             |                 Login                  |                   Register                   |
+| :----------------------------------: | :------------------------------------: | :------------------------------------------: |
+| ![Home](public/screenshots/home.png) | ![Login](public/screenshots/login.png) | ![Register](public/screenshots/register.png) |
+
+|                Belajar                 |                Pelajaran                 |                 Kuis                 |
+| :------------------------------------: | :--------------------------------------: | :----------------------------------: |
+| ![Learn](public/screenshots/learn.png) | ![Lesson](public/screenshots/lesson.png) | ![Quiz](public/screenshots/quiz.png) |
+
+|               Kilas Balik                |                     Peringkat                      |                   Profil                   |
+| :--------------------------------------: | :------------------------------------------------: | :----------------------------------------: |
+| ![Review](public/screenshots/review.png) | ![Leaderboard](public/screenshots/leaderboard.png) | ![Profile](public/screenshots/profile.png) |
+
 ## Teknologi Utama
 
 - Next.js 15 (App Router).
