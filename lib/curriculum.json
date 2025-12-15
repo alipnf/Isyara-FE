@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated_at": "2025-11-15T17:56:31.903123Z",
+  "generated_at": "2025-12-15T22:36:55.409677Z",
   "model_classes": [
     "A",
     "B",
@@ -29,7 +29,7 @@
     "Y",
     "Z"
   ],
-  "model_accuracy": 0.9307787418365479,
+  "model_accuracy": 0.9776704907417297,
   "units": [
     {
       "id": 1,
@@ -44,7 +44,13 @@
           "order": 0,
           "xp": 50,
           "payload": {
-            "hurufRange": ["A", "B", "C", "D", "E"]
+            "hurufRange": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E"
+            ]
           }
         },
         {
@@ -54,7 +60,13 @@
           "order": 1,
           "xp": 50,
           "payload": {
-            "hurufRange": ["F", "G", "H", "I", "J"]
+            "hurufRange": [
+              "F",
+              "G",
+              "H",
+              "I",
+              "J"
+            ]
           }
         },
         {
@@ -64,7 +76,13 @@
           "order": 2,
           "xp": 50,
           "payload": {
-            "hurufRange": ["K", "L", "M", "N", "O"]
+            "hurufRange": [
+              "K",
+              "L",
+              "M",
+              "N",
+              "O"
+            ]
           }
         },
         {
@@ -74,7 +92,13 @@
           "order": 3,
           "xp": 50,
           "payload": {
-            "hurufRange": ["P", "Q", "R", "S", "T"]
+            "hurufRange": [
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T"
+            ]
           }
         },
         {
@@ -84,7 +108,14 @@
           "order": 4,
           "xp": 50,
           "payload": {
-            "hurufRange": ["U", "V", "W", "X", "Y", "Z"]
+            "hurufRange": [
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "Z"
+            ]
           }
         },
         {
