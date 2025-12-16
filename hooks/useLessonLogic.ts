@@ -9,8 +9,8 @@ export function useLessonLogic(
 ) {
   const [groupItems, setGroupItems] = useState<string[]>([]);
   const [selectedItem, setSelectedItem] = useState('');
-  const [isDetecting, setIsDetecting] = useState(false);
-  const [cameraEnabled, setCameraEnabled] = useState(false);
+  const [isDetecting, setIsDetecting] = useState(true);
+  const [cameraEnabled, setCameraEnabled] = useState(true);
   const [confidence, setConfidence] = useState(0);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [completedItems, setCompletedItems] = useState<Set<string>>(
