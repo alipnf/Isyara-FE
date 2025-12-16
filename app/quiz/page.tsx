@@ -107,11 +107,11 @@ function QuizPageContent() {
       // Complete the lesson using the key-based API
       completeLesson(key).catch(() => {
         // Fallback: still award XP to avoid losing progress feeling
-        awardProgress({ xpDelta: xp, lessonsDelta: 1 }).catch(() => {});
+        awardProgress({ xpDelta: xp, lessonsDelta: 1 }).catch(() => { });
       });
     } else if (!alreadyCompleted) {
       // No lesson key: fallback local award so user still sees progress
-      awardProgress({ xpDelta: xp, lessonsDelta: 1 }).catch(() => {});
+      awardProgress({ xpDelta: xp, lessonsDelta: 1 }).catch(() => { });
     }
   }, [
     quizState,
@@ -152,19 +152,7 @@ function QuizPageContent() {
                 settings={settings}
                 onToggleCamera={toggleCamera}
                 onDetection={(label, conf) => handleDetection(label || '')}
-                onLiveUpdate={(status) => {
-                  // Map status back to what useQuizLogic expects if needed,
-                  // or just pass dummy values since useQuizLogic might expect label/conf
-                  // Actually, let's check useQuizLogic signature.
-                  // Based on errors: handleLiveUpdate expects (label, conf)
-                  // But QuizCameraSection calls it with (status)
-                  // We need to fix this mismatch.
-                  // For now, let's pass empty/default values to satisfy the hook if it's just for logging/status
-                  handleLiveUpdate(
-                    status === 'active' ? 'active' : 'inactive',
-                    0
-                  );
-                }}
+                onLiveUpdate={handleLiveUpdate}
                 onStatusChange={(isDetecting) =>
                   handleStatusChange(isDetecting ? 'active' : 'inactive')
                 }
