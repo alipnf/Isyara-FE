@@ -52,63 +52,37 @@ export async function fetchCurrentUserRank(): Promise<LeaderboardUser | null> {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data, error } = await supabase
-    .from('users')
-    .select('id, full_name, avatar_url, level, xp, total_lessons_completed')
-    .eq('id', user.id)
-    .single();
+  const { data, error } = await supabase.rpc('get_user_rank', {
+    p_user_id: user.id,
+  });
+
   if (error) throw error;
-  if (!data) return null;
+  // data is an array because RPC returns TABLE, but we expect one row for specific user
+  const row = (data as any)?.[0];
+  if (!row) return null;
 
-  const userXp = data.xp ?? 0;
-  const { count, error: countErr } = await supabase
-    .from('users')
-    .select('id', { count: 'exact', head: true })
-    .gt('xp', userXp);
-  if (countErr) throw countErr;
-
-  const rank = (count ?? 0) + 1;
   const mapped: LeaderboardUser = {
-    rank,
-    name: data.full_name || 'Pengguna',
-    xp: data.xp ?? 0,
-    level: data.level ?? 1,
-    avatar: initials(data.full_name),
+    rank: Number(row.rank),
+    name: row.full_name || 'Pengguna',
+    xp: row.xp ?? 0,
+    level: row.level ?? 1,
+    avatar: initials(row.full_name),
     streak: 0,
-    lessonsCompleted: data.total_lessons_completed ?? 0,
+    lessonsCompleted: row.total_lessons_completed ?? 0,
     isCurrentUser: true,
   };
   return mapped;
 }
 
 export async function fetchLeaderboardStats(): Promise<StatsData> {
-  // totalUsers
-  const { count, error: countErr } = await supabase
-    .from('users')
-    .select('id', { count: 'exact', head: true });
-  if (countErr) throw countErr;
+  const { data, error } = await supabase.rpc('get_leaderboard_stats');
+  if (error) throw error;
 
-  // highestXp
-  const { data: highRow, error: highErr } = await supabase
-    .from('users')
-    .select('xp')
-    .order('xp', { ascending: false })
-    .limit(1)
-    .single();
-  if (highErr) throw highErr;
-
-  // averageXp (simple client average)
-  const { data: allXp, error: avgErr } = await supabase
-    .from('users')
-    .select('xp');
-  if (avgErr) throw avgErr;
-  const arr = (allXp || []).map((r: any) => Number(r.xp ?? 0));
-  const sum = arr.reduce((a, b) => a + b, 0);
-  const avg = arr.length ? Math.round(sum / arr.length) : 0;
+  const stats = (data as any)?.[0] || {};
 
   return {
-    totalUsers: count ?? 0,
-    highestXp: (highRow?.xp as number) ?? 0,
-    averageXp: avg,
+    totalUsers: stats.total_users ?? 0,
+    highestXp: stats.highest_xp ?? 0,
+    averageXp: stats.average_xp ?? 0,
   };
 }
