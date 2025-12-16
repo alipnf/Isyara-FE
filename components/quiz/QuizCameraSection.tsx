@@ -16,7 +16,7 @@ interface QuizCameraSectionProps {
   settings: LessonSettings;
   onToggleCamera: () => void;
   onDetection: (label: string | null, confidence: number) => void;
-  onLiveUpdate: (status: 'inactive' | 'active' | 'error') => void;
+  onLiveUpdate: (label: string | null, confidence: number) => void;
   onStatusChange: (isDetecting: boolean) => void;
   onSettingsChange: (settings: LessonSettings) => void;
   onExit: () => void;
@@ -89,9 +89,7 @@ export function QuizCameraSection({
             showLandmarks={settings.showHandLandmarks}
             showPerformanceStats={settings.showPerformanceStats}
             onDetection={onDetection}
-            onLiveUpdate={(label, conf) =>
-              onLiveUpdate(label ? 'active' : 'inactive')
-            }
+            onLiveUpdate={onLiveUpdate}
             onStatusChange={(status) => onStatusChange(status === 'active')}
             containerClassName="rounded-xl w-full h-full relative z-10"
             holdDuration={settings.holdDuration[0]}
