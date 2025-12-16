@@ -21,7 +21,7 @@ export async function getMyUser(): Promise<DbUser | null> {
     .from('users')
     .select('*')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
   return data as DbUser;
@@ -83,8 +83,9 @@ export async function awardProgress({
     .from('users')
     .select('*')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
   if (error) throw error;
+  if (!data) throw new Error('User profile not found');
 
   const currentLevel = Number((data as any)?.level ?? 1);
   let currentXp = Number((data as any)?.xp ?? 0);
