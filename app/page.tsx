@@ -4,6 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import Link from 'next/link';
 
 export default function Home() {
   return (
@@ -24,9 +25,12 @@ export default function Home() {
                   Jadikan belajar Bahasa Isyarat Indonesia mudah dan
                   menyenangkan dengan pelacakan tangan AI real-time kami.
                 </p>
-                <button className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-wide shadow-lg shadow-primary/40 hover:shadow-glow-primary transition-all duration-300">
+                <Link
+                  href="/auth"
+                  className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-wide shadow-lg shadow-primary/40 hover:shadow-glow-primary transition-all duration-300"
+                >
                   <span className="truncate">Mulai Belajar</span>
-                </button>
+                </Link>
               </div>
             </section>
 
