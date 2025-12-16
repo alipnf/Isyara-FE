@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -23,7 +25,26 @@ export function CompletionDialog({
   xpReward,
   performanceData,
 }: CompletionDialogProps) {
+  const router = useRouter();
+  const [countdown, setCountdown] = useState(3);
   const hasReward = typeof xpReward === 'number' && xpReward > 0;
+
+  useEffect(() => {
+    if (open && hasReward) {
+      setCountdown(3);
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            router.push('/learn');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [open, hasReward, router]);
 
   const downloadReport = () => {
     if (!performanceData) return;
@@ -137,8 +158,8 @@ export function CompletionDialog({
           )}
 
           <div className="flex justify-center">
-            <Button asChild className="w-full">
-              <Link href="/learn">Lanjutkan</Link>
+            <Button className="w-full" onClick={() => router.push('/learn')}>
+              Lanjutkan {hasReward && countdown > 0 ? `(${countdown})` : ''}
             </Button>
           </div>
         </div>
