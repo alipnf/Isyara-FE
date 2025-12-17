@@ -26,7 +26,7 @@ export default function Home() {
                   menyenangkan dengan pelacakan tangan AI real-time kami.
                 </p>
                 <Link
-                  href="/auth"
+                  href="/auth/login"
                   className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-wide shadow-lg shadow-primary/40 hover:shadow-glow-primary transition-all duration-300"
                 >
                   <span className="truncate">Mulai Belajar</span>
