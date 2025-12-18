@@ -61,6 +61,43 @@ export async function updateMyUser(patch: {
   }
 }
 
+export async function syncUserProfile() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  // Get metadata from auth
+  const metaName =
+    user.user_metadata?.full_name ||
+    user.user_metadata?.name ||
+    user.user_metadata?.username ||
+    user.email?.split('@')[0]; // Fallback to email username
+  const metaAvatar = user.user_metadata?.avatar_url;
+
+  if (!metaName && !metaAvatar) return;
+
+  // Check current DB state
+  const { data: dbUser } = await supabase
+    .from('users')
+    .select('full_name, avatar_url')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  // Update if different
+  const updates: any = {};
+  if (metaName && dbUser?.full_name !== metaName) {
+    updates.full_name = metaName;
+  }
+  if (metaAvatar && dbUser?.avatar_url !== metaAvatar) {
+    updates.avatar_url = metaAvatar;
+  }
+
+  if (Object.keys(updates).length > 0) {
+    await supabase.from('users').update(updates).eq('id', user.id);
+  }
+}
+
 export function computeXpToNextLevel(level: number | null | undefined) {
   // Simple progression formula; adjust if backend defines differently
   const lvl = Math.max(1, Number(level ?? 1));

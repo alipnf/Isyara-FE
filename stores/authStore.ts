@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/utils/supabase/client';
+import { syncUserProfile } from '@/utils/supabase/profile';
 
 interface AuthState {
   user: User | null;
@@ -98,9 +99,16 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
         initialized: true,
       });
 
+      // Background sync profile
+      if (session?.user) {
+        syncUserProfile().catch((err) =>
+          console.error('Profile sync error:', err)
+        );
+      }
+
       // Listen for auth changes
       const {
-        data: {},
+        data: { },
       } = supabase.auth.onAuthStateChange(async (event, session) => {
         set({
           session,
