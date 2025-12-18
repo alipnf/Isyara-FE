@@ -30,13 +30,13 @@ export function ReferenceCard({
     if (selectedCategory !== 'huruf') return;
     groupItems.forEach((item) => {
       const img = new Image();
-      img.src = `/hand/${item}/body%20dot%20(1).jpg`;
+      img.src = `/hand/${item}/cover.jpg`;
     });
   }, [selectedCategory, groupItems]);
 
   const imageSrc = useMemo(() => {
     return selectedCategory === 'huruf'
-      ? `/hand/${selectedItem}/body%20dot%20(1).jpg`
+      ? `/hand/${selectedItem}/cover.jpg`
       : `/bisindo-sign-language-hand-gesture-for-letter-.jpg`;
   }, [selectedCategory, selectedItem]);
 
