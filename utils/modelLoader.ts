@@ -67,8 +67,6 @@ function rewriteWeightNames(
 async function loadPatchedLayersModel(
   modelUrl: string
 ): Promise<tf.LayersModel> {
-  console.log('🔧 Patched loader trying URL:', modelUrl);
-
   // 1) Fetch model.json and read manifest
   const modelJsonRes = await fetch(modelUrl);
   if (!modelJsonRes.ok)
@@ -78,26 +76,21 @@ async function loadPatchedLayersModel(
   const weightsManifest = modelJson.weightsManifest || [];
   const root = baseUrlOf(modelUrl);
 
-  console.log('🔧 Base URL:', root);
-
   // 2) Fetch all shard files and concat
   const shardUrls: string[] = [];
   const originalSpecs: WeightSpec[] = [];
   for (const group of weightsManifest) {
     for (const p of group.paths) {
       const resolvedUrl = resolveUrl(p, root);
-      console.log('🔧 Resolved shard URL:', p, '->', resolvedUrl);
       shardUrls.push(resolvedUrl);
     }
     for (const ws of group.weights) originalSpecs.push(ws);
   }
   const buffers: ArrayBuffer[] = [];
   for (const u of shardUrls) {
-    console.log('📥 Fetching weight shard:', u);
     buffers.push(await fetchArrayBuffer(u));
   }
   const weightData = concatArrayBuffers(buffers);
-  console.log('✅ Concatenated weight data:', weightData.byteLength, 'bytes');
 
   // 3) Try strategies to patch names and load from memory
   const strategies: Array<'drop_prefix' | 'sequential_1'> = [
@@ -106,18 +99,8 @@ async function loadPatchedLayersModel(
   ];
   let lastErr: any;
 
-  console.log(
-    '🔧 Original weight specs sample:',
-    originalSpecs.slice(0, 3).map((s) => s.name)
-  );
-
   for (const s of strategies) {
     const patchedSpecs = rewriteWeightNames(originalSpecs, s);
-    console.log(
-      `🔧 Trying strategy "${s}", sample patched names:`,
-      patchedSpecs.slice(0, 3).map((ps) => ps.name)
-    );
-
     const handler = tf.io.fromMemory({
       modelTopology,
       weightSpecs: patchedSpecs,
@@ -125,11 +108,9 @@ async function loadPatchedLayersModel(
     });
     try {
       const m = await tf.loadLayersModel(handler);
-      console.log('✅ Patched strategy succeeded:', s);
       return m;
     } catch (e: any) {
       lastErr = e;
-      console.warn(`❌ Patched strategy "${s}" failed:`, e?.message || e);
     }
   }
   throw lastErr || new Error('Patched loading failed');
@@ -143,26 +124,15 @@ export async function loadModelWithFallback(
     // First, try patched loader directly (safer approach)
     try {
       const m = await loadPatchedLayersModel(url);
-      console.log('✅ Loaded model with patched loader from:', url);
       return m;
     } catch (patchErr: any) {
-      console.warn(
-        '⚠️ Patched load failed for:',
-        url,
-        patchErr?.message || patchErr
-      );
       lastErr = patchErr;
 
       // If patched loader fails, try normal loader as fallback
       try {
         const m = await tf.loadLayersModel(url);
-        console.log('✅ Loaded model normally from:', url);
         return m;
       } catch (normalErr: any) {
-        console.warn(
-          '⚠️ Normal load also failed:',
-          normalErr?.message || normalErr
-        );
         lastErr = normalErr;
       }
     }
@@ -176,10 +146,8 @@ export async function fetchJSONWithFallback(urls: string[]): Promise<any> {
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-      console.log('Loaded metadata from:', url);
       return await res.json();
     } catch (e: any) {
-      console.warn('Failed to fetch metadata:', url, e?.message || e);
       lastErr = e;
     }
   }

@@ -632,9 +632,7 @@ export function HandDetection({
             if (handsRef.current && video) {
               await handsRef.current.send({ image: video });
             }
-          } catch (e) {
-            console.warn('hands.send error', e);
-          }
+          } catch (e) {}
         },
         width,
         height,
@@ -701,9 +699,7 @@ export function HandDetection({
         cameraRef.current.stop();
         cameraRef.current = null;
       }
-    } catch (e) {
-      console.warn('Error stopping camera:', e);
-    }
+    } catch (e) {}
 
     const stream = videoRef.current?.srcObject;
     if (stream) {
@@ -715,9 +711,7 @@ export function HandDetection({
         if (videoRef.current) {
           videoRef.current.srcObject = null;
         }
-      } catch (e) {
-        console.warn('Error stopping video tracks:', e);
-      }
+      } catch (e) {}
     }
 
     if (onStatusChange) {

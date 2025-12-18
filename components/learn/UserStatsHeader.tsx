@@ -3,7 +3,6 @@
 import { UserStats } from '@type/learn';
 import { useAuthStore } from '@/stores/authStore';
 
-
 interface UserStatsHeaderProps {
   stats: UserStats;
 }
@@ -16,11 +15,9 @@ export function UserStatsHeader({ stats }: UserStatsHeaderProps) {
     user?.email?.split('@')[0] ||
     'Pengguna';
 
-
   return (
     <div className="w-full bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/10 shadow-lg backdrop-blur-xl rounded-xl p-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div className="flex items-center gap-4">
-
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Selamat Datang, {username}!

@@ -191,7 +191,6 @@ export function PerformanceRecorderInline({
     if (onRecordingComplete) {
       onRecordingComplete(data);
     } else {
-      console.log('📊 Performance recording complete:', data);
       // Only auto-download if not controlled (legacy behavior)
       if (!isControlled) {
         downloadData(data);
