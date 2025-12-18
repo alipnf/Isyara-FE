@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated_at": "2025-12-15T22:36:55.409677Z",
+  "generated_at": "2025-12-16T17:02:13.867670Z",
   "model_classes": [
     "A",
     "B",
@@ -29,7 +29,7 @@
     "Y",
     "Z"
   ],
-  "model_accuracy": 0.9776704907417297,
+  "model_accuracy": 0.9723225235939026,
   "units": [
     {
       "id": 1,
