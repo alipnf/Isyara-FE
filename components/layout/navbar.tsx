@@ -61,6 +61,11 @@ export function Navbar() {
     { name: 'Belajar', href: '/learn' }, // mapped to real routes
     { name: 'Kilas Balik', href: '/review' },
     { name: 'Peringkat', href: '/leaderboard' },
+    {
+      name: 'Survei',
+      href: 'https://forms.gle/Gb6HWz3hG7JXv8yQ7',
+      external: true,
+    },
   ];
 
   return (
@@ -84,15 +89,18 @@ export function Navbar() {
           </div>
 
           <nav className="hidden md:flex items-center gap-8">
-            {isAuthenticated && navLinks.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors"
-              >
-                {item.name}
-              </Link>
-            ))}
+            {isAuthenticated &&
+              navLinks.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  target={item.external ? '_blank' : undefined}
+                  rel={item.external ? 'noopener noreferrer' : undefined}
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors"
+                >
+                  {item.name}
+                </Link>
+              ))}
           </nav>
 
           <div className="flex items-center gap-2">
@@ -196,11 +204,20 @@ export function Navbar() {
                       <DropdownMenuSeparator />
                     </>
                   )}
-                  {isAuthenticated && navLinks.map((item) => (
-                    <DropdownMenuItem key={item.name} asChild>
-                      <Link href={item.href}>{item.name}</Link>
-                    </DropdownMenuItem>
-                  ))}
+                  {isAuthenticated &&
+                    navLinks.map((item) => (
+                      <DropdownMenuItem key={item.name} asChild>
+                        <Link
+                          href={item.href}
+                          target={item.external ? '_blank' : undefined}
+                          rel={
+                            item.external ? 'noopener noreferrer' : undefined
+                          }
+                        >
+                          {item.name}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
                   {isAuthenticated && (
                     <>
                       <DropdownMenuSeparator />
