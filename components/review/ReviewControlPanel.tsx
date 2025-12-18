@@ -100,11 +100,11 @@ export function ReviewControlPanel({
             {/* Hint Content */}
             <div className="flex-1 min-h-0 flex flex-col">
               {showHint ? (
-                <div className="relative flex-1 w-full bg-muted rounded-lg overflow-hidden border border-border/50">
+                <div className="relative w-full aspect-video bg-muted rounded-lg overflow-hidden border border-border/50">
                   <img
-                    src={`/hand/${currentItem}/body dot (1).jpg`}
+                    src={`/hand/${currentItem}/cover.jpg`}
                     alt={`Gerakan ${currentItem}`}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-cover"
                     onError={(e) => {
                       e.currentTarget.src = '/placeholder-hand.png';
                     }}

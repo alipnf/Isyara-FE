@@ -24,11 +24,11 @@ export function ReviewHintSection({
       <div className="flex-1 min-h-0 overflow-y-auto">
         {showHint ? (
           <div className="space-y-4 h-full flex flex-col">
-            <div className="relative aspect-square bg-muted rounded-lg overflow-hidden shrink-0">
+            <div className="relative aspect-video bg-muted rounded-lg overflow-hidden shrink-0">
               <img
-                src={`/hand/${currentItem}/body dot (1).jpg`}
+                src={`/hand/${currentItem}/cover.jpg`}
                 alt={`Gerakan ${currentItem}`}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
                 onError={(e) => {
                   e.currentTarget.src = '/placeholder-hand.png';
                 }}
